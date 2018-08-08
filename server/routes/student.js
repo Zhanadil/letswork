@@ -1,0 +1,81 @@
+const express = require('express');
+const router = express.Router();
+const authRouter = express.Router();
+const privateRouter = express.Router();
+const vacancyRouter = express.Router();
+
+const passport = require('passport');
+const passportConfig = require('@root/passport');
+const { validateBody, schemas } = require('@helpers/routeHelpers');
+
+const StudentsAuthController = require('@controllers/student/auth');
+const StudentsProfileController = require('@controllers/student/profile');
+const StudentsVacancyController = require('@controllers/student/vacancy');
+
+// ***********  All student authorization related requests  *****************
+
+authRouter.post('/signup',
+    validateBody(schemas.studentRegSchema),
+    StudentsAuthController.signUp);
+
+authRouter.post('/signin',
+    validateBody(schemas.authSchema),
+    passport.authorize('local-student', {session: false}),
+    StudentsAuthController.signIn);
+
+authRouter.post('/google',
+    passport.authorize('googleToken-student', {session: false}),
+    StudentsAuthController.googleOAuth);
+
+router.use('/auth', authRouter);
+
+// ********************  All Getters and Setters  *************************
+
+// Only authorized students can make these requests.
+privateRouter.use(passport.authorize('jwt-student', {session: false}));
+
+// Update student's first name and get student's first name by id.
+privateRouter.route('/first-name')
+    .post(StudentsProfileController.updateFirstName)
+    .get(StudentsProfileController.getFirstName);
+
+// same.
+privateRouter.route('/last-name')
+    .post(StudentsProfileController.updateLastName)
+    .get(StudentsProfileController.getLastName);
+
+privateRouter.route('/phone')
+    .post(StudentsProfileController.updatePhone)
+    .get(StudentsProfileController.getPhone);
+
+privateRouter.route('/description')
+    .post(StudentsProfileController.updateDescription)
+    .get(StudentsProfileController.getDescription);
+
+/*router.route('/private/profile-picture')
+    .post(passport.authorize('jwt-student', {session: false}),
+    StudentsController.saveProfilePicture);*/
+
+// Get full profile information.
+privateRouter.get('/profile', StudentsProfileController.getFullProfile);
+
+// Get profile information based on request:
+// Input example:
+//      {"id": true, "email": true}
+// Output:
+//      {"id": "... company id ...", "email": "johndoe@hotmail.com"}
+privateRouter.post('/profile', StudentsProfileController.getProfile);
+
+privateRouter.get('/get', StudentsProfileController.get);
+
+router.use('/private', privateRouter);
+
+// ***************************  Vacancies  ********************************
+
+vacancyRouter.post('/apply',
+    validateBody(schemas.vacancySchema),
+    StudentsVacancyController.apply);
+
+router.use('/vacancy', vacancyRouter);
+
+module.exports = router;
