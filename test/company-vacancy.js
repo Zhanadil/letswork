@@ -22,7 +22,6 @@ chai.use(chaiAsPromised);
 
 const expect = chai.expect;
 
-// All vacancy requests
 describe('Company vacancy related requests', () => {
     const newCompany = {
         credentials: {

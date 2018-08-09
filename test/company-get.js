@@ -21,7 +21,6 @@ chai.use(chaiAsPromised);
 
 const expect = chai.expect;
 
-// All get requests
 describe('Company get requests', () => {
     const newUser = {
         credentials: {

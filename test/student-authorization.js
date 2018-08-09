@@ -20,7 +20,6 @@ chai.use(chaiAsPromised);
 
 const expect = chai.expect;
 
-// All requests before registration
 describe('Student authorization methods', () => {
     const newUser = { email: faker.internet.email().toLowerCase(), password: faker.internet.password() };
     const unexistingUser = { email: faker.internet.email().toLowerCase(), password: faker.internet.password() };
