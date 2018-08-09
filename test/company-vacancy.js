@@ -227,7 +227,7 @@ describe('Company vacancy related requests', () => {
                 })
         });
 
-        it('it shouldn\'t create apply to student without credentials', (done) => {
+        it('it shouldn\'t apply to student without credentials', (done) => {
             chai.request(server)
                 .post('/company/vacancy/apply')
                 .send({'vacancyId': vacancyId, 'studentId': studentId})
