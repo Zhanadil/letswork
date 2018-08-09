@@ -110,7 +110,7 @@ module.exports = {
     // Output:
     //      {"id": "... company id ...", "email": "johndoe@hotmail.com"}
     getProfile: async (req, res, next) => {
-        Company.findById(req.account.id, function(err, student) {
+        Company.findById(req.account.id, function(err, company) {
             if (err) {
                 return res.status(500).json({error: "Company not found"});
             }

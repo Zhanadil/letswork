@@ -7,11 +7,13 @@ module.exports = {
                 next();
             }
 
-            const salt = await bcrypt.genSalt(10);
+            if (this.isModified('password')) {
+                const salt = await bcrypt.genSalt(10);
 
-            const passwordHash = await bcrypt.hash(this.password, salt);
+                const passwordHash = await bcrypt.hash(this.password, salt);
 
-            this.password = passwordHash;
+                this.password = passwordHash;
+            }
             next();
         } catch(error) {
             next(error);
