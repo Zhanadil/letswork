@@ -3,7 +3,7 @@ const Student = require('@models/student');
 // Student Controller functions that are used to get/set profile info.
 module.exports = {
     // Update first name of the user
-    updateFirstName: async (req, res, next) => {
+    updateFirstName: (req, res, next) => {
         if (req.body.firstName === undefined) {
             return res.status(400).json({error: "firstName not received"});
         }
@@ -22,7 +22,7 @@ module.exports = {
     },
 
     // Get student's first name by id.
-    getFirstName: async (req, res, next) => {
+    getFirstName: (req, res, next) => {
         Student.findById(req.account.id, function(err, student) {
             if (err) {
                 return res.status(500).json({error: "Student not found"});
@@ -32,7 +32,7 @@ module.exports = {
         })
     },
 
-    updateLastName: async (req, res, next) => {
+    updateLastName: (req, res, next) => {
         if (req.body.lastName === undefined) {
             return res.status(400).json({error: "lastName not received"});
         }
@@ -49,7 +49,7 @@ module.exports = {
         })
     },
 
-    getLastName: async (req, res, next) => {
+    getLastName: (req, res, next) => {
         Student.findById(req.account.id, function(err, student) {
             if (err) {
                 return res.status(500).json({error: "Student not found"});
@@ -59,7 +59,7 @@ module.exports = {
         })
     },
 
-    updatePhone: async (req, res, next) => {
+    updatePhone: (req, res, next) => {
         if (req.body.phone === undefined) {
             return res.status(400).json({error: "phone not received"});
         }
@@ -76,7 +76,7 @@ module.exports = {
         })
     },
 
-    getPhone: async (req, res, next) => {
+    getPhone: (req, res, next) => {
         Student.findById(req.account.id, function(err, student) {
             if (err) {
                 return res.status(500).json({error: "Student not found"});
@@ -86,7 +86,7 @@ module.exports = {
         })
     },
 
-    updateDescription: async (req, res, next) => {
+    updateDescription: (req, res, next) => {
         if (req.body.description === undefined) {
             return res.status(400).json({error: "description not received"});
         }
@@ -103,7 +103,7 @@ module.exports = {
         })
     },
 
-    getDescription: async (req, res, next) => {
+    getDescription: (req, res, next) => {
         Student.findById(req.account.id, function(err, student) {
             if (err) {
                 return res.status(500).json({error: "Student not found"});
@@ -113,7 +113,7 @@ module.exports = {
         })
     },
 
-    saveProfilePicture: async (req, res, next) => {
+    saveProfilePicture: (req, res, next) => {
         Student.findById(req.account.id, function(err, student) {
             if (err) {
                 return res.status(500).json({error: "Student not found"});
@@ -128,7 +128,7 @@ module.exports = {
     },
 
     // Get full profile information, excluding password and registration method
-    getFullProfile: async (req, res, next) => {
+    getFullProfile: (req, res, next) => {
         Student.findById(req.account.id, function(err, student) {
             if (err) {
                 return res.status(500).json({ error: "Student not found" });
@@ -151,7 +151,7 @@ module.exports = {
     //      {"id": true, "email": true}
     // Output:
     //      {"id": "... student id ...", "email": "johndoe@hotmail.com"}
-    getProfile: async (req, res, next) => {
+    getProfile: (req, res, next) => {
         Student.findById(req.account.id, function(err, student) {
             if (err) {
                 return res.status(500).json({error: "Student not found"});

@@ -21,7 +21,6 @@ chai.use(chaiAsPromised);
 
 const expect = chai.expect;
 
-// All requests before registration
 describe('Student get requests', () => {
     const newUser = {
         credentials: {

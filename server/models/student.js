@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
 const credentialsSchema = require('@models/credentials_schema');
-const { hashPassword, isValidPassword } = require('@models/helpers/passwordHelper');
 
 // Students DB
 // Student can log in via email, google or [facebook(currently not working)].
@@ -17,6 +16,7 @@ const studentSchema = mongoose.Schema({
     /*profilePicture: String,
     profileThumbnail: Buffer,*/
     description: String,
+    vacancies: [String],
 });
 
 const student = mongoose.model('student', studentSchema);

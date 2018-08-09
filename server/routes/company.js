@@ -61,8 +61,6 @@ router.use('/private', privateRouter);
 
 // ***************************  Vacancies  *********************************
 
-vacancyRouter.get('/all', CompanyVacancyController.getVacancies);
-
 vacancyRouter.use(passport.authorize('jwt-company', {session: false}));
 
 vacancyRouter.post('/',
@@ -70,8 +68,20 @@ vacancyRouter.post('/',
     CompanyVacancyController.newVacancy);
 
 vacancyRouter.post('/apply',
-    validateBody(schemas.vacancySchema),
+    validateBody(schemas.companyVacancyApplicationSchema),
     CompanyVacancyController.apply);
+
+vacancyRouter.post('/accept',
+    validateBody(schemas.companyVacancyApplicationSchema),
+    CompanyVacancyController.accept);
+
+vacancyRouter.post('/reject',
+    validateBody(schemas.companyVacancyApplicationSchema),
+    CompanyVacancyController.reject);
+
+vacancyRouter.post('/discard',
+    validateBody(schemas.companyVacancyApplicationSchema),
+    CompanyVacancyController.discard);
 
 router.use('/vacancy', vacancyRouter);
 

@@ -20,7 +20,7 @@ chai.use(chaiAsPromised);
 
 const expect = chai.expect;
 
-// All requests before registration
+// All set requests after registration
 describe('Company POST requests', () => {
     const newUser = {
         credentials: {

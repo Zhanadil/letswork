@@ -39,6 +39,7 @@ describe('Student authorization methods', () => {
                 .post('/student/auth/signup')
                 .send(newUser)
                 .end((err, res) => {
+                    expect(err).to.be.null;
                     res.should.have.status(200);
                     res.body.should.be.an('object');
                     res.body.should.have.property('token');
@@ -60,6 +61,7 @@ describe('Student authorization methods', () => {
                 .post('/student/auth/signup')
                 .send(wrongEmailUser)
                 .end((err, res) => {
+                    expect(err).to.be.null;
                     res.should.have.status(400);
                     res.body.should.be.an('object');
                     res.body.should.have.property('details');
@@ -73,6 +75,7 @@ describe('Student authorization methods', () => {
                 .post('/student/auth/signup')
                 .send({ password: '123' })
                 .end((err, res) => {
+                    expect(err).to.be.null;
                     res.should.have.status(400);
                     res.body.should.be.an('object');
                     res.body.should.have.property('details');
@@ -86,6 +89,7 @@ describe('Student authorization methods', () => {
                 .post('/student/auth/signup')
                 .send({ email: newUser.email })
                 .end((err, res) => {
+                    expect(err).to.be.null;
                     res.should.have.status(400);
                     res.body.should.be.an('object');
                     res.body.should.have.property('details');

@@ -20,8 +20,7 @@ chai.use(chaiAsPromised);
 
 const expect = chai.expect;
 
-// All requests before registration
-describe('Student authorization methods', () => {
+describe('Student post requests', () => {
     const newUser = {
         credentials: {
             method: 'local',

@@ -86,7 +86,6 @@ passport.use('local-student', new LocalStrategy({
 
         const isMatch = await student.credentials.isValidPassword(password);
 
-        console.log('before isMatch');
         if (!isMatch) {
             return done(null, false);
         }

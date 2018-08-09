@@ -1,5 +1,3 @@
-require('module-alias/register');
-
 const express = require('express');
 const morgan = require('morgan');
 const body_parser = require('body-parser');
@@ -12,8 +10,10 @@ const fileUpload = require('express-fileupload');
 mongoose.Promise = global.Promise;
 mongoose.connect(config.DBHost);
 
-const student = require('@routes/student');
-const company = require('@routes/company');
+const studentRouter = require('@routes/student');
+const companyRouter = require('@routes/company');
+const publicRouter = require('@routes/public');
+const privateRouter = require('@routes/private');
 
 const app = express();
 
@@ -32,10 +32,9 @@ if(config.util.getEnv('NODE_ENV') === 'dev') {
 app.use(body_parser.json());
 app.use(fileUpload());
 
-app.use('/student', student);
-app.use('/company', company);
-
-const port = process.env.PORT || 3000;
-app.listen(port);
+app.use('/student', studentRouter);
+app.use('/company', companyRouter);
+app.use('/public', publicRouter);
+app.use('/private', privateRouter);
 
 module.exports = app;

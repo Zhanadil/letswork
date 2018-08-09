@@ -20,7 +20,6 @@ chai.use(chaiAsPromised);
 
 const expect = chai.expect;
 
-// All requests before registration
 describe('Company authorization methods', () => {
     const newUser = {
         email: faker.internet.email().toLowerCase(),
@@ -54,6 +53,7 @@ describe('Company authorization methods', () => {
                 .post('/company/auth/signup')
                 .send(newUser)
                 .end((err, res) => {
+                    expect(err).to.be.null;
                     res.should.have.status(200);
                     res.body.should.be.an('object');
                     res.body.should.have.property('token');
@@ -75,6 +75,7 @@ describe('Company authorization methods', () => {
                 .post('/company/auth/signup')
                 .send(wrongEmailUser)
                 .end((err, res) => {
+                    expect(err).to.be.null;
                     res.should.have.status(400);
                     res.body.should.be.an('object');
                     res.body.should.have.property('details');
@@ -88,6 +89,7 @@ describe('Company authorization methods', () => {
                 .post('/company/auth/signup')
                 .send({ password: newUser.password, name: newUser.name })
                 .end((err, res) => {
+                    expect(err).to.be.null;
                     res.should.have.status(400);
                     res.body.should.be.an('object');
                     res.body.should.have.property('details');
@@ -101,6 +103,7 @@ describe('Company authorization methods', () => {
                 .post('/company/auth/signup')
                 .send({ email: newUser.email, name: newUser.name })
                 .end((err, res) => {
+                    expect(err).to.be.null;
                     res.should.have.status(400);
                     res.body.should.be.an('object');
                     res.body.should.have.property('details');
@@ -114,6 +117,7 @@ describe('Company authorization methods', () => {
                 .post('/company/auth/signup')
                 .send({ email: newUser.email, password: newUser.password })
                 .end((err, res) => {
+                    expect(err).to.be.null;
                     res.should.have.status(400);
                     res.body.should.be.an('object');
                     res.body.should.have.property('details');

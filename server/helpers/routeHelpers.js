@@ -5,6 +5,7 @@ module.exports = {
     validateBody: (schema) => {
         return (req, res, next) => {
             const result = joi.validate(req.body, schema);
+
             if (result.error) {
                 return res.status(400).json(result.error);
             }
@@ -42,9 +43,12 @@ module.exports = {
             maxSalary: joi.number(),
             vacancyName: joi.string().required(),
         }),
-        vacancySchema: joi.object().keys({
+        studentVacancyApplicationSchema: joi.object().keys({
             vacancyId: joi.string().required(),
-            studentId: joi.string().required(),
+        }),
+        companyVacancyApplicationSchema: joi.object().keys({
+            vacancyId: joi.string().required(),
+            studentId: joi.string().required()
         }),
     },
 };

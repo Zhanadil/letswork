@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
 const credentialsSchema = require('@models/credentials_schema');
-const { hashPassword, isValidPassword } = require('@models/helpers/passwordHelper');
 
 // Companies DB
 // Company can log in via email, google or [facebook(currently not working)].
@@ -20,6 +19,7 @@ const companySchema = mongoose.Schema({
     description: String,
     image: String,
     thumbnail: String, // or buffer?
+    vacancies: [String],
 });
 
 const company = mongoose.model('company', companySchema);

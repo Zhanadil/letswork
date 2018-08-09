@@ -26,7 +26,6 @@ module.exports = {
     },
 
     signIn: async (req, res, next) => {
-        console.log('SIGN IN');
         const token = await signToken(req.account);
         return res.status(200).json({ token });
     },

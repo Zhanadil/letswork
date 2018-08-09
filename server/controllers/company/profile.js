@@ -3,7 +3,7 @@ const Company = require('@models/company');
 // Company controller functions that are used to get/set profile information.
 module.exports = {
     // Update company name.
-    updateName: async (req, res, next) => {
+    updateName: (req, res, next) => {
         if (req.body.name === undefined) {
             return res.status(400).json({error: "name not received"});
         }
@@ -22,7 +22,7 @@ module.exports = {
     },
 
     // Get company name by id.
-    getName: async (req, res, next) => {
+    getName: (req, res, next) => {
         // Find company -> return company name
         Company.findById(req.account.id, function(err, company) {
             if (err) {
@@ -34,7 +34,7 @@ module.exports = {
     },
 
     // Update company contact phone number.
-    updatePhone: async (req, res, next) => {
+    updatePhone: (req, res, next) => {
         if (req.body.phone === undefined) {
             return res.status(400).json({error: "phone not received"});
         }
@@ -51,7 +51,7 @@ module.exports = {
         })
     },
 
-    getPhone: async (req, res, next) => {
+    getPhone: (req, res, next) => {
         Company.findById(req.account.id, function(err, company) {
             if (err) {
                 return res.status(500).json({error: "Company not found"});
@@ -61,7 +61,7 @@ module.exports = {
         })
     },
 
-    updateDescription: async (req, res, next) => {
+    updateDescription: (req, res, next) => {
         if (req.body.description === undefined) {
             return res.status(400).json({error: "description not received"});
         }
@@ -78,7 +78,7 @@ module.exports = {
         })
     },
 
-    getDescription: async (req, res, next) => {
+    getDescription: (req, res, next) => {
         Company.findById(req.account.id, function(err, company) {
             if (err) {
                 return res.status(500).json({error: "Company not found"});
@@ -89,7 +89,7 @@ module.exports = {
     },
 
     // Get full profile information, excluding password and registration method.
-    getFullProfile: async (req, res, next) => {
+    getFullProfile: (req, res, next) => {
         Company.findById(req.account.id, function(err, company) {
             if (err) {
                 return res.status(500).json({ error: "Company not found" });
@@ -109,7 +109,7 @@ module.exports = {
     //      {"id": true, "email": true}
     // Output:
     //      {"id": "... company id ...", "email": "johndoe@hotmail.com"}
-    getProfile: async (req, res, next) => {
+    getProfile: (req, res, next) => {
         Company.findById(req.account.id, function(err, company) {
             if (err) {
                 return res.status(500).json({error: "Company not found"});
