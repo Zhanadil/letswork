@@ -137,15 +137,15 @@ token: required
 
 /POST /student/auth/signin  
 
-### Company getters and setters
+### Student getters and setters
 
-/POST /student/private/{name, phone, description}  
+/POST /student/private/{firstName, lastName, phone, description}  
 
-/GET /student/private/{name, phone, description}  
+/GET /student/private/{firstName, lastName, phone, description}  
 
 /GET /student/private/profile  
 
-/POST /company/private/profile  
+/POST /student/private/profile  
 
 ### Student vacancy related requests
 
