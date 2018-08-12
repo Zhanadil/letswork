@@ -85,14 +85,4 @@ vacancyRouter.post('/discard',
 
 router.use('/vacancy', vacancyRouter);
 
-// ***************************  Pagination  *********************************
-
-// WARNING: for test purposes only.
-router.get('/gen-profiles', async (req, res, next) => {
-    for (var i = 20;i < 100000;++i) {
-        await CompanyProfileController.gen(i);
-    }
-    res.status(200).json({'status': 'ok'});
-});
-
 module.exports = router;
