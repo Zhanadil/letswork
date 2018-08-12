@@ -41,6 +41,7 @@ module.exports = {
             type: joi.array().items(joi.string()),
             minSalary: joi.number(),
             maxSalary: joi.number(),
+            vacancyField: joi.string().required(),
             vacancyName: joi.string().required(),
         }),
         studentVacancyApplicationSchema: joi.object().keys({

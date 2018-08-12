@@ -45,6 +45,7 @@ describe('Company vacancy related requests', () => {
     var vacancyId;
 
     const newVacancy = {
+        vacancyField: "IT",
         vacancyName: "SWE",
         description: faker.name.jobDescriptor(),
         demands: [faker.lorem.words()],

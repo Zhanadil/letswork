@@ -45,6 +45,7 @@ describe('Student vacancy related requests', () => {
     var vacancyId;
 
     const newVacancy = {
+        vacancyField: "IT",
         vacancyName: "SWE",
         description: faker.name.jobDescriptor(),
         demands: [faker.lorem.words()],
@@ -191,7 +192,7 @@ describe('Student vacancy related requests', () => {
                 chai.request(server)
                     .post('/company/vacancy')
                     .set('Authorization', newCompanyToken)
-                    .send({'vacancyName': 'doctor'})
+                    .send({'vacancyField': 'medicine', 'vacancyName': 'doctor'})
                     .end((err, res) => {
                         Vacancy.findOne({'companyId': newCompanyId}, (err, vacancy) => {
                             expect(err).to.be.null;
@@ -312,7 +313,7 @@ describe('Student vacancy related requests', () => {
                 chai.request(server)
                     .post('/company/vacancy')
                     .set('Authorization', newCompanyToken)
-                    .send({'vacancyName': 'doctor'})
+                    .send({'vacancyField': 'medicine', 'vacancyName': 'doctor'})
                     .end((err, res) => {
                         Vacancy.findOne({'companyId': newCompanyId}, (err, vacancy) => {
                             expect(err).to.be.null;
@@ -454,7 +455,7 @@ describe('Student vacancy related requests', () => {
                         chai.request(server)
                             .post('/company/vacancy')
                             .set('Authorization', newCompanyToken)
-                            .send({'vacancyName': 'doctor'})
+                            .send({'vacancyField': 'medicine', 'vacancyName': 'doctor'})
                             .end((err, res) => {
                                 Vacancy.findOne({'companyId': newCompanyId}, (err, vacancy) => {
                                     expect(err).to.be.null;

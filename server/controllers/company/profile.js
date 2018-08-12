@@ -1,4 +1,5 @@
 const Company = require('@models/company');
+const faker = require('faker');
 
 // Company controller functions that are used to get/set profile information.
 module.exports = {
@@ -133,4 +134,20 @@ module.exports = {
             res.status(200).json(result);
         });
     },
+
+    // WARNING:
+    // For test purposes only.
+    gen: async (i) => {
+        console.log('creating ', i);
+        var company = await new Company({
+            credentials: {
+                method: 'local',
+                email: i.toString() + '@gmail.com',
+                password: faker.internet.password(),
+            },
+            name: i.toString(),
+        })
+
+        await company.save();
+    }
 };

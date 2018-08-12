@@ -8,6 +8,7 @@ module.exports = {
     newVacancy: async (req, res, next) => {
         var details = {};
         details.companyId = req.account.id;
+        details.vacancyField = req.body.vacancyField;
         details.vacancyName = req.body.vacancyName;
         details.description = req.body.description;
         details.demands = req.body.demands;
