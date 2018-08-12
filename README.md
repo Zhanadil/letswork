@@ -123,7 +123,7 @@ token: required
 	}
 
 ## Students:
-**__If nothing is writtin, then it is similar to company's same request__**
+**__If nothing is written, then it is similar to company's equivalent request__**
 
 ### Student authentication
 
