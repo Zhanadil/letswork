@@ -12,7 +12,7 @@ mongoose.connect(config.DBHost);
 
 const studentRouter = require('@routes/student');
 const companyRouter = require('@routes/company');
-const publicRouter = require('@routes/public');
+const generalRouter = require('@routes/general');
 const privateRouter = require('@routes/private');
 
 const app = express();
@@ -34,7 +34,7 @@ app.use(fileUpload());
 
 app.use('/student', studentRouter);
 app.use('/company', companyRouter);
-app.use('/public', publicRouter);
+app.use('/', generalRouter);
 app.use('/private', privateRouter);
 
 module.exports = app;

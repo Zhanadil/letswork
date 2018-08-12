@@ -21,6 +21,10 @@ const vacancySchema = mongoose.Schema({
     type: [String],
     minSalary: Number,
     maxSalary: Number,
+    vacancyField: {
+        type: String,
+        required: true,
+    },
     vacancyName: {
         type: String,
         required: true,

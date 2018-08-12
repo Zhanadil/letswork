@@ -1,4 +1,5 @@
 const Company = require('@models/company');
+const faker = require('faker');
 
 // Company controller functions that are used to get/set profile information.
 module.exports = {
