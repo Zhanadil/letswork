@@ -1,6 +1,16 @@
 const Company = require('@models/company');
 const faker = require('faker');
 
+unnestCompany = function(company) {
+    var result = {};
+    result.id = company.id;
+    result.email = company.credentials.email;
+    result.name = company.name;
+    result.phone = company.phone;
+    result.description = company.description;
+    return result;
+}
+
 // Company controller functions that are used to get/set profile information.
 module.exports = {
     // Update company name.
@@ -95,13 +105,8 @@ module.exports = {
             if (err) {
                 return res.status(500).json({ error: "Company not found" });
             }
-            var result = {};
-            result.id = company.id;
-            result.email = company.credentials.email;
-            result.name = company.name;
-            result.phone = company.phone;
-            result.description = company.description;
-            return res.status(200).json(result);
+
+            return res.status(200).json(unnestCompany(company));
         });
     },
 
@@ -134,4 +139,35 @@ module.exports = {
             res.status(200).json(result);
         });
     },
+
+    // Update profile information
+    // Input example:
+    //      {"email": "some_email@gmail.com", "name": "Google"}
+    updateProfile: (req, res, next) => {
+        Company.findById(req.account.id, function(err, company) {
+            if (err) {
+                return res.status(500).json({error: "Company not found"});
+            }
+            if (req.body.email !== undefined) {
+                company.credentials.email = req.body.email;
+            }
+            if (req.body.password !== undefined) {
+                company.credentials.password = req.body.password;
+            }
+            if (req.body.name !== undefined) {
+                company.name = req.body.name;
+            }
+            if (req.body.phone !== undefined) {
+                company.phone = req.body.phone;
+            }
+            if (req.body.description !== undefined) {
+                company.description = req.body.description;
+            }
+            company.save(function (err, updatedCompany) {
+                if (err) return res.status(500).json({error: "db error"});
+
+                return res.status(200).json(unnestCompany(updatedCompany));
+            });
+        });
+    }
 };

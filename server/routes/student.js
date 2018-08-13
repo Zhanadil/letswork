@@ -66,7 +66,10 @@ privateRouter.get('/profile', StudentsProfileController.getFullProfile);
 //      {"id": "... company id ...", "email": "johndoe@hotmail.com"}
 privateRouter.post('/profile', StudentsProfileController.getProfile);
 
-privateRouter.get('/get', StudentsProfileController.get);
+// Update profile information
+// Input example:
+//      {"email": "some_email@gmail.com", "firstName": "John"}
+privateRouter.post('/update-profile', StudentsProfileController.updateProfile);
 
 router.use('/private', privateRouter);
 

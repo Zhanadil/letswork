@@ -1,5 +1,17 @@
 const Student = require('@models/student');
 
+unnestStudent = function(student) {
+    var result = {};
+    result.id = student.id;
+    result.email = student.credentials.email;
+    result.firstName = student.firstName;
+    result.lastName = student.lastName;
+    result.phone = student.phone;
+    result.description = student.description;
+    result.vacancies = student.vacancies;
+    return result;
+}
+
 // Student Controller functions that are used to get/set profile info.
 module.exports = {
     // Update first name of the user
@@ -133,16 +145,8 @@ module.exports = {
             if (err) {
                 return res.status(500).json({ error: "Student not found" });
             }
-            var result = {};
-            result.id = student.id;
-            result.email = student.credentials.email;
-            result.firstName = student.firstName;
-            result.lastName = student.lastName;
-            result.phone = student.phone;
-            /*result.profilePicture = student.profilePicture;
-            result.profileThumbnail = student.profileThumbnail;*/
-            result.description = student.description;
-            return res.status(200).json(result);
+
+            return res.status(200).json(unnestStudent(student));
         });
     },
 
@@ -179,8 +183,36 @@ module.exports = {
         });
     },
 
-    get: async (req, res, next) => {
-        var Users = await Student.find({});
-        return res.status(200).json({users: Users});
-    }
+    // Update profile information
+    // Input example:
+    //      {"email": "some_email@gmail.com", "firstName": "John"}
+    updateProfile: (req, res, next) => {
+        Student.findById(req.account.id, function(err, student) {
+            if (err) {
+                return res.status(500).json({error: "Student not found"});
+            }
+            if (req.body.email !== undefined) {
+                student.credentials.email = req.body.email;
+            }
+            if (req.body.password !== undefined) {
+                student.credentials.password = req.body.password;
+            }
+            if (req.body.firstName !== undefined) {
+                student.firstName = req.body.firstName;
+            }
+            if (req.body.lastName !== undefined) {
+                student.lastName = req.body.lastName;
+            }
+            if (req.body.phone !== undefined) {
+                student.phone = req.body.phone;
+            }
+            if (req.body.description !== undefined) {
+                student.description = req.body.description;
+            }
+            student.save(function (err, updatedStudent) {
+                if (err) return res.status(500).json({error: "db error"});
+                return res.status(200).json(unnestStudent(updatedStudent));
+            });
+        });
+    },
 };
