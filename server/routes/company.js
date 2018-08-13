@@ -57,6 +57,11 @@ privateRouter.get('/profile', CompanyProfileController.getFullProfile);
 //      {"id": "... company id ...", "email": "johndoe@hotmail.com"}
 privateRouter.post('/profile', CompanyProfileController.getProfile);
 
+// Update profile information
+// Input example:
+//      {"email": "some_email@gmail.com", "firstName": "John"}
+privateRouter.post('/update-profile', CompanyProfileController.updateProfile);
+
 router.use('/private', privateRouter);
 
 // ***************************  Vacancies  *********************************
