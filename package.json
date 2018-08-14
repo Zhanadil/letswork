@@ -28,6 +28,7 @@
     "passport-local": "^1.0.0"
   },
   "scripts": {
+    "server-prod": "cross-env NODE_ENV=prod nodemon index.js",
     "server-dev": "cross-env NODE_ENV=dev nodemon index.js",
     "test": "cross-env NODE_ENV=test mocha --timeout 4000"
   },
