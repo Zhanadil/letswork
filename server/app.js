@@ -6,6 +6,7 @@ const config = require('config');
 const fs = require('fs');
 const path = require('path');
 const fileUpload = require('express-fileupload');
+const cors = require('cors');
 
 mongoose.Promise = global.Promise;
 mongoose.connect(config.DBHost);
@@ -31,6 +32,7 @@ if(config.util.getEnv('NODE_ENV') === 'dev') {
 }
 app.use(body_parser.json());
 app.use(fileUpload());
+app.use(cors());
 
 app.use('/student', studentRouter);
 app.use('/company', companyRouter);
