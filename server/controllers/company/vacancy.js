@@ -72,7 +72,6 @@ module.exports = {
         return res.status(200).json({status: "ok"});
     },
 
-
     // Student accepts company's request.
     accept: async (req, res, next) => {
         // Find the vacancy.
@@ -194,5 +193,50 @@ module.exports = {
         await vacancy.save();
 
         return res.status(200).json({status: "ok"});
+    },
+
+    // Get all applications related to this company, based on status written in request.
+    getVacancies: async (req, res, next) => {
+        Vacancy.find({"_id": {"$in": req.account.vacancies}}, (err, vacancies) => {
+            var applications = [];
+            var studentIds = [];
+            console.log(vacancies);
+            vacancies.forEach(v => {
+                console.log(v);
+                console.log("companyApplied: ", v.companyApplied);
+                v.companyApplied.forEach(application => {
+                    console.log(req.body.outgoing + " <--> " + application.status);
+                    if (req.body.outgoing !== undefined && req.body.outgoing === application.status) {
+                        studentIds.push(application.studentId);
+                        applications.push({
+                            vacancyId: v.id,
+                            studentId: application.studentId,
+                            state: "outgoing",
+                        })
+                    }
+                });
+
+                v.studentApplied.forEach(application => {
+                    console.log(req.body.incoming + " -- " + application.status);
+                    if (req.body.incoming !== undefined && req.body.incoming === application.status) {
+                        studentIds.push(application.studentId);
+                        applications.push({
+                            vacancyId: v.id,
+                            studentId: application.studentId,
+                            state: "incoming",
+                        })
+                    }
+                });
+            });
+            Student.find({"_id": {"$in": studentIds}},
+                        {"credentials.password": 0, "__v": 0},
+                        (err, students) => {
+                res.status(200).send({
+                    vacancies,
+                    students,
+                    applications,
+                });
+            })
+        });
     },
 };
