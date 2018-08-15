@@ -93,6 +93,10 @@ vacancyRouter.post('/discard',
     validateBody(schemas.studentVacancyApplicationSchema),
     StudentsVacancyController.discard);
 
+vacancyRouter.post('/get',
+    validateBody(schemas.getVacancySchema),
+    StudentsVacancyController.getVacancies);
+
 router.use('/vacancy', vacancyRouter);
 
 module.exports = router;

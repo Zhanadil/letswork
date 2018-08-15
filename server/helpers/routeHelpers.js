@@ -51,5 +51,9 @@ module.exports = {
             vacancyId: joi.string().required(),
             studentId: joi.string().required()
         }),
+        getVacancySchema: joi.object().keys({
+            incoming: joi.string(),
+            outgoing: joi.string()
+        }),
     },
 };

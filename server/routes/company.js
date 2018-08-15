@@ -88,6 +88,10 @@ vacancyRouter.post('/discard',
     validateBody(schemas.companyVacancyApplicationSchema),
     CompanyVacancyController.discard);
 
+vacancyRouter.post('/get',
+    validateBody(schemas.getVacancySchema),
+    CompanyVacancyController.getVacancies);
+
 router.use('/vacancy', vacancyRouter);
 
 module.exports = router;

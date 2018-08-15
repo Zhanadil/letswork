@@ -165,4 +165,52 @@ module.exports = {
 
         return res.status(200).json({status: "ok"});
     },
+
+    // Get all applications related to this student, based on status written in request.
+    getVacancies: async (req, res, next) => {
+        Vacancy.find({"_id": {"$in": req.account.vacancies}}, (err, vacancies) => {
+            var applications = [];
+            var vacancyResult = [];
+            console.log(vacancies);
+            vacancies.forEach(v => {
+                console.log(v);
+                console.log("companyApplied: ", v.companyApplied);
+                v.companyApplied.some(application => {
+                    console.log(req.body.incoming + " <--> " + application.status);
+                    if (req.body.incoming !== undefined &&
+                        req.body.incoming === application.status &&
+                        req.account.id === application.studentId) {
+                        applications.push({
+                            vacancyId: v.id,
+                            studentId: application.studentId,
+                            state: "incoming",
+                        })
+                        vacancyResult.push(v);
+                        return true;
+                    }
+                    return false;
+                });
+
+                v.studentApplied.some(application => {
+                    console.log(req.body.outgoing + " -- " + application.status);
+                    if (req.body.outgoing !== undefined &&
+                        req.body.outgoing === application.status &&
+                        req.account.id === application.studentId) {
+                        applications.push({
+                            vacancyId: v.id,
+                            studentId: application.studentId,
+                            state: "outgoing",
+                        })
+                        vacancyResult.push(v);
+                        return true;
+                    }
+                    return false;
+                });
+            });
+            res.status(200).send({
+                vacancies: vacancyResult,
+                applications,
+            });
+        });
+    }
 };
