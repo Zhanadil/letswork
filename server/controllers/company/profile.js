@@ -189,7 +189,6 @@ module.exports = {
         		if (err) {
         			return res.status(500).send({error: err.message});
         		}
-                fs.unlink(path.join(dir_path, ))
                 return res.status(200).send({status: 'ok'});
         	});
         }
