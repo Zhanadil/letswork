@@ -66,6 +66,19 @@ token: required
 		"description": ""
 	}
 
+/POST /company/private/image_avatar
+
+token: required
+
+>Add avatar as a form-data, it should be png
+
+
+/GET /company/private/image_avatar/[image_name]
+
+token: required
+
+>Company's avatar is named as its id, example: "5bcasd..ddq.png"
+
 ### Company vacancy related requests
 
 /POST /company/vacancy/  
@@ -146,6 +159,10 @@ token: required
 /GET /student/private/profile  
 
 /POST /student/private/profile  
+
+/POST /student/private/image_avatar
+
+/GET /student/private/image_avatar/[image_name]
 
 ### Student vacancy related requests
 
