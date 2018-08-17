@@ -8,6 +8,8 @@ const path = require('path');
 const fileUpload = require('express-fileupload');
 const cors = require('cors');
 
+config.RESOURCES_DIRECTORY = path.join(require('os').homedir(), config.RESOURCES_DIRECTORY);
+
 mongoose.Promise = global.Promise;
 mongoose.connect(config.DBHost);
 

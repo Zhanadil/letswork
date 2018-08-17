@@ -13,8 +13,6 @@ const studentSchema = mongoose.Schema({
     firstName: String,
     lastName: String,
     phone: String,
-    /*profilePicture: String,
-    profileThumbnail: Buffer,*/
     description: String,
     vacancies: [String],
 });

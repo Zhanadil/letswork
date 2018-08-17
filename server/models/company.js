@@ -17,8 +17,6 @@ const companySchema = mongoose.Schema({
     },
     phone: String,
     description: String,
-    image: String,
-    thumbnail: String, // or buffer?
     vacancies: [String],
 });
 
