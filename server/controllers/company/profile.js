@@ -1,5 +1,6 @@
+const fs = require('fs');
+const path = require('path');
 const Company = require('@models/company');
-const faker = require('faker');
 
 unnestCompany = function(company) {
     var result = {};
@@ -169,5 +170,28 @@ module.exports = {
                 return res.status(200).json(unnestCompany(updatedCompany));
             });
         });
-    }
+    },
+
+    // Puts Company's avatar image into dir_path folder, sets the name to company's id.
+    updateImage: (dir_path) => {
+        return (req, res, next) => {
+            var file = req.files.avatar;
+
+            var image_name = req.account.id;
+            //TODO: support jpg.
+        	if (file.mimetype === 'image/png') {
+        		image_name += '.png';
+        	} else {
+        		return res.status(415).send({error: "unsupported file type"});
+        	}
+
+            fs.writeFile(path.join(dir_path, image_name), file.data, function(err) {
+        		if (err) {
+        			return res.status(500).send({error: err.message});
+        		}
+                fs.unlink(path.join(dir_path, ))
+                return res.status(200).send({status: 'ok'});
+        	});
+        }
+    },
 };

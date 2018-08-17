@@ -1,4 +1,6 @@
 const express = require('express');
+const path = require('path');
+const config = require('config');
 const router = express.Router();
 const authRouter = express.Router();
 const privateRouter = express.Router();
@@ -70,6 +72,20 @@ privateRouter.post('/profile', StudentsProfileController.getProfile);
 // Input example:
 //      {"email": "some_email@gmail.com", "firstName": "John"}
 privateRouter.post('/update-profile', StudentsProfileController.updateProfile);
+
+
+// Puts avatar image to default directory(it's inside config folder, name=RESOURCES_DIRECTORY)
+privateRouter.post('/image_avatar',
+    StudentsProfileController.updateImage(path.join(config.RESOURCES_DIRECTORY, 'avatar/student')));
+
+// Gets avatar image from default directory.
+privateRouter.use('/image_avatar',
+    express.static(path.join(config.RESOURCES_DIRECTORY, 'avatar/student')));
+
+// If no image was found, returns default image.
+privateRouter.get('/image_avatar/*', function(req, res, next) {
+    res.sendFile(path.join(config.RESOURCES_DIRECTORY, '/avatar/student/default_avatar.png'));
+});
 
 router.use('/private', privateRouter);
 

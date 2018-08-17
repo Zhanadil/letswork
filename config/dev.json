@@ -1,3 +1,4 @@
 {
-    "DBHost": "mongodb://localhost/iloveworkdev"
+    "DBHost": "mongodb://localhost/iloveworkdev",
+    "RESOURCES_DIRECTORY": "/resources_dev"
 }
