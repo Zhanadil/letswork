@@ -1,6 +1,6 @@
 const Vacancy = require('@models/vacancy');
 
-// Public controller functions that gets, but not changes all private
+// Public controller functions that get, but do not change all private
 // vacancy related information.
 module.exports = {
     getVacancyById: async (req, res, next) => {

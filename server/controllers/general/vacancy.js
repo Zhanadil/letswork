@@ -49,7 +49,6 @@ module.exports = {
     // :limit = number of vacancies per page
     // :page = page number starting from 0
 
-    // returns vacancies that should be rendered on the page.
     // request contains filter that matches things like minSalary, vacancyField, etc..
     // request also contains requirements that output should match,
     // like show only minSalary, vacancyName and companyId

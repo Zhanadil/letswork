@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const Student = require('@models/student');
+const logger = require('@root/logger');
 
 unnestStudent = function(student) {
     var result = {};
@@ -222,6 +223,8 @@ module.exports = {
     updateImage: (dir_path) => {
         return (req, res, next) => {
             var file = req.files.avatar;
+
+            logger.debug(file.name);
 
             var image_name = req.account.id;
             //TODO: support jpg.
