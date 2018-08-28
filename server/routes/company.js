@@ -66,17 +66,8 @@ privateRouter.post('/profile', CompanyProfileController.getProfile);
 privateRouter.post('/update-profile', CompanyProfileController.updateProfile);
 
 // Puts avatar image to default directory(it's inside config folder, name=RESOURCES_DIRECTORY)
-privateRouter.post('/image_avatar',
+privateRouter.post('/image-avatar',
     CompanyProfileController.updateImage(path.join(config.RESOURCES_DIRECTORY, 'avatar/company')));
-
-// Gets avatar image from default directory.
-privateRouter.use('/image_avatar',
-    express.static(path.join(config.RESOURCES_DIRECTORY, 'avatar/company')));
-
-// If no image was found, returns default image.
-privateRouter.get('/image_avatar/*', function(req, res, next) {
-    res.sendFile(path.join(config.RESOURCES_DIRECTORY, '/avatar/company/default_avatar.png'));
-});
 
 router.use('/private', privateRouter);
 
