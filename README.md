@@ -73,12 +73,6 @@ token: required
 >Add avatar as a form-data, it should be png
 
 
-/GET /company/private/image_avatar/[image_name]
-
-token: required
-
->Company's avatar is named as its id, example: "5bcasd..ddq.png"
-
 ### Company vacancy related requests
 
 /POST /company/vacancy/  
@@ -135,6 +129,12 @@ token: required
 		"studentId": "", // required
 	}
 
+/GET /company/image_avatar/[image_name]
+
+>Company's avatar is named as its id, example: "5bcasd..ddq.png"
+
+
+
 ## Students:
 **__If nothing is written, then it is similar to company's equivalent request__**
 
@@ -161,8 +161,6 @@ token: required
 /POST /student/private/profile  
 
 /POST /student/private/image_avatar
-
-/GET /student/private/image_avatar/[image_name]
 
 ### Student vacancy related requests
 
@@ -202,6 +200,8 @@ token: required
 	req.body: {
 		"vacancyId": "", // required
 	}
+	
+/GET /student/image_avatar/[image_name]
 	
 ## Pagination
 ### Vacancies
