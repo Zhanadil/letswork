@@ -12,7 +12,6 @@ const companySchema = mongoose.Schema({
     credentials: credentialsSchema,
     name: {
         type: String,
-        required: true,
         unique: true
     },
     phone: String,

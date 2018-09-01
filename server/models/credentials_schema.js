@@ -5,12 +5,10 @@ const credentialsSchema = mongoose.Schema({
     method: {
         type: String,
         enum: ['local', 'google'],
-        required: true,
     },
     email: {
         type: String,
         lowercase: true,
-        required: true,
         unique: true,
     },
     password: String,
