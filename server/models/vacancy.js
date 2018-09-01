@@ -3,14 +3,10 @@ const mongoose = require('mongoose');
 // Schema of application, contains id of a student who applied/was called, and
 // status of the application.
 const applicationSchema = mongoose.Schema({
-    studentId: {
-        type: String,
-        required: true,
-    },
+    studentId: String,
     status: {
         type: String,
         enum: ['pending', 'accepted', 'rejected', 'discarded'],
-        required: true,
     },
 });
 
@@ -23,22 +19,10 @@ const vacancySchema = mongoose.Schema({
     type: [String],
     minSalary: Number,
     maxSalary: Number,
-    vacancyField: {
-        type: String,
-        required: true,
-    },
-    vacancyName: {
-        type: String,
-        required: true,
-    },
-    companyId: {
-        type: String,
-        required: true,
-    },
-    companyName: {
-        type: String,
-        required: true,
-    },
+    vacancyField: String,
+    vacancyName: String,
+    companyId: String,
+    companyName: String,
     companyApplied: [applicationSchema],
     studentApplied: [applicationSchema],
 });
