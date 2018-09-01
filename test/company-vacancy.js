@@ -105,6 +105,7 @@ describe('Company vacancy related requests', () => {
                         expect(vacancy.maxSalary).to.be.eql(newVacancy.maxSalary);
                         expect(vacancy.vacancyName).to.be.eql(newVacancy.vacancyName);
                         expect(vacancy.companyId).to.be.eql(companyId);
+                        expect(vacancy.companyName).to.be.eql(newCompany.name);
                         expect(vacancy.companyApplied).to.be.eql([]);
                         expect(vacancy.studentApplied).to.be.eql([]);
                         vacancyId = vacancy.id;

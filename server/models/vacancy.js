@@ -1,8 +1,7 @@
 const mongoose = require('mongoose');
 
-// Vacancy DB
-// Contains vacancy information including vacancy name, description, salaries,
-// company id, all students who applied, all students who were called by the company.
+// Schema of application, contains id of a student who applied/was called, and
+// status of the application.
 const applicationSchema = mongoose.Schema({
     studentId: {
         type: String,
@@ -15,6 +14,9 @@ const applicationSchema = mongoose.Schema({
     },
 });
 
+// Vacancy DB
+// Contains vacancy information including vacancy name, description, salaries,
+// company id, all students who applied, all students who were called by the company.
 const vacancySchema = mongoose.Schema({
     description: String,
     demands: [String],
@@ -30,6 +32,10 @@ const vacancySchema = mongoose.Schema({
         required: true,
     },
     companyId: {
+        type: String,
+        required: true,
+    },
+    companyName: {
         type: String,
         required: true,
     },
