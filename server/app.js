@@ -7,7 +7,10 @@ const fs = require('fs');
 const path = require('path');
 const fileUpload = require('express-fileupload');
 const cors = require('cors');
+const JWT = require('jsonwebtoken');
+const { JWT_SECRET } = require('@configuration');
 
+// WARNING: This line has to be above all router files.
 config.RESOURCES_DIRECTORY = path.join(require('os').homedir(), config.RESOURCES_DIRECTORY);
 
 const logger = require('@root/logger');
@@ -43,6 +46,26 @@ if(config.util.getEnv('NODE_ENV') === 'dev') {
 app.use(body_parser.json());
 app.use(fileUpload());
 app.use(cors());
+
+// Log all requests
+app.use((req, res, next) => {
+    // If no token received
+    if (req.headers.authorization === undefined) {
+        logger.info(req.url, {info: "no token"})
+        next();
+    } else {
+        // If token is received, then decode
+        JWT.verify(req.headers.authorization, JWT_SECRET, (err, decoded) => {
+            if (err) {
+                logger.info(req.url, {info: "incorrect token"});
+            } else {
+                // If token is correct, then log credentials
+                logger.info(req.url, {sub: decoded.sub});
+            }
+            next();
+        });
+    }
+});
 
 app.use('/student', studentRouter);
 app.use('/company', companyRouter);

@@ -32,6 +32,7 @@ describe('General vacancy requests', () => {
             vacancyField: 'IT',
             vacancyName: 'SWE Intern',
             companyId: '1',
+            companyName: 'company1',
             companyApplied: [{studentId: '1', status: 'pending'}],
             studentApplied: [],
         },{
@@ -43,6 +44,7 @@ describe('General vacancy requests', () => {
             vacancyField: 'IT',
             vacancyName: 'SWE',
             companyId: '2',
+            companyName: 'company2',
             companyApplied: [],
             studentApplied: [{studentId: '2', status: 'pending'}],
         },{
@@ -54,6 +56,7 @@ describe('General vacancy requests', () => {
             vacancyField: 'medicine',
             vacancyName: 'doctor',
             companyId: '3',
+            companyName: 'company3',
             companyApplied: [{studentId: '3', status: 'pending'}],
             studentApplied: [],
         },{
@@ -65,6 +68,7 @@ describe('General vacancy requests', () => {
             vacancyField: 'medicine',
             vacancyName: 'doctor',
             companyId: '4',
+            companyName: 'company4',
             companyApplied: [],
             studentApplied: [{studentId: '4', status: 'pending'}],
         }];
@@ -180,7 +184,7 @@ describe('General vacancy requests', () => {
     });
 
     describe('/POST /vacancy/:page/:limit', () => {
-        it('it should require {description, demands, type, minSalary, maxSalary}', (done) => {
+        it('it should require {description, demands, type, companyName, minSalary, maxSalary}', (done) => {
             chai.request(server)
                 .post('/vacancy/0/2')
                 .send({
@@ -188,6 +192,7 @@ describe('General vacancy requests', () => {
                         'description': 1,
                         'demands': 1,
                         'type': 1,
+                        'companyName': 1,
                         'minSalary': 1,
                         'maxSalary': 1,
                     },
@@ -198,7 +203,7 @@ describe('General vacancy requests', () => {
                     expect(res.body.length).to.be.eql(2);
                     expect(res.body[0]).to.be.an('object');
                     expect(res.body[0]).to.have.all.keys(
-                        '_id', 'description', 'demands', 'type',
+                        '_id', 'description', 'demands', 'type', 'companyName',
                         'minSalary', 'maxSalary'
                     );
                     expect(res.body[0]).to.not.have.all.keys(
@@ -207,7 +212,7 @@ describe('General vacancy requests', () => {
                     )
                     expect(res.body[1]).to.be.an('object');
                     expect(res.body[1]).to.have.all.keys(
-                        '_id', 'description', 'demands', 'type',
+                        '_id', 'description', 'demands', 'type', 'companyName',
                         'minSalary', 'maxSalary'
                     );
                     expect(res.body[1]).to.not.have.all.keys(
@@ -251,7 +256,7 @@ describe('General vacancy requests', () => {
                         'companyApplied', 'studentApplied'
                     )
                     expect(res.body[0]).to.not.have.all.keys(
-                        'description', 'demands', 'type',
+                        'description', 'demands', 'type', 'companyName',
                         'minSalary', 'maxSalary'
                     );
                     expect(res.body[1]).to.be.an('object');
@@ -260,7 +265,7 @@ describe('General vacancy requests', () => {
                         'companyApplied', 'studentApplied'
                     )
                     expect(res.body[1]).to.not.have.all.keys(
-                        'description', 'demands', 'type',
+                        'description', 'demands', 'type', 'companyName',
                         'minSalary', 'maxSalary'
                     );
                     expect(res.body[0]._id).to.be.eql(vacancyids[1]);
@@ -293,7 +298,7 @@ describe('General vacancy requests', () => {
     });
 
     describe('/POST /vacancy/:id', () => {
-        it('it should require {description, demands, type, minSalary, maxSalary}', (done) => {
+        it('it should require {description, demands, type, companyName, minSalary, maxSalary}', (done) => {
             chai.request(server)
                 .post('/vacancy/' + vacancyids[0])
                 .send({
@@ -301,6 +306,7 @@ describe('General vacancy requests', () => {
                         'description': 1,
                         'demands': 1,
                         'type': 1,
+                        'companyName': 1,
                         'minSalary': 1,
                         'maxSalary': 1,
                     },
@@ -309,7 +315,7 @@ describe('General vacancy requests', () => {
                     expect(err).to.be.null;
                     expect(res.body).to.be.an('object');
                     expect(res.body).to.have.all.keys(
-                        '_id', 'description', 'demands', 'type',
+                        '_id', 'description', 'demands', 'type', 'companyName',
                         'minSalary', 'maxSalary'
                     );
                     expect(res.body).to.not.have.all.keys(

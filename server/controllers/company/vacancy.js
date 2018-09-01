@@ -23,6 +23,8 @@ module.exports = {
             }
         });
 
+        details.companyName = company.name;
+
         // Create new vacancy.
         const vacancy = await new Vacancy(details);
         await vacancy.save();
@@ -200,12 +202,8 @@ module.exports = {
         Vacancy.find({"_id": {"$in": req.account.vacancies}}, (err, vacancies) => {
             var applications = [];
             var studentIds = [];
-            console.log(vacancies);
             vacancies.forEach(v => {
-                console.log(v);
-                console.log("companyApplied: ", v.companyApplied);
                 v.companyApplied.forEach(application => {
-                    console.log(req.body.outgoing + " <--> " + application.status);
                     if (req.body.outgoing !== undefined && req.body.outgoing === application.status) {
                         studentIds.push(application.studentId);
                         applications.push({
@@ -217,7 +215,6 @@ module.exports = {
                 });
 
                 v.studentApplied.forEach(application => {
-                    console.log(req.body.incoming + " -- " + application.status);
                     if (req.body.incoming !== undefined && req.body.incoming === application.status) {
                         studentIds.push(application.studentId);
                         applications.push({
