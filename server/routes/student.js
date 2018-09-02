@@ -37,12 +37,12 @@ router.use('/auth', authRouter);
 privateRouter.use(passport.authorize('jwt-student', {session: false}));
 
 // Update student's first name and get student's first name by id.
-privateRouter.route('/first-name')
+privateRouter.route('/firstName')
     .post(StudentsProfileController.updateFirstName)
     .get(StudentsProfileController.getFirstName);
 
 // same.
-privateRouter.route('/last-name')
+privateRouter.route('/lastName')
     .post(StudentsProfileController.updateLastName)
     .get(StudentsProfileController.getLastName);
 

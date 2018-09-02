@@ -55,10 +55,10 @@ describe('Student get requests', () => {
     });
 
     describe('/GET /private', () => {
-        describe('first-name', () => {
+        describe('firstName', () => {
             it('it should get first-name', (done) => {
                 chai.request(server)
-                    .get('/student/private/first-name')
+                    .get('/student/private/firstName')
                     .set('Authorization', token)
                     .end((err, res) => {
                         expect(err).to.be.null;
@@ -70,9 +70,9 @@ describe('Student get requests', () => {
                     });
             });
 
-            it('it shouldn\'t get first-name without token', (done) => {
+            it('it shouldn\'t get firstName without token', (done) => {
                 chai.request(server)
-                    .get('/student/private/first-name')
+                    .get('/student/private/firstName')
                     .end((err, res) => {
                         expect(err).to.be.null;
                         res.should.have.status(401);
@@ -84,9 +84,9 @@ describe('Student get requests', () => {
         });
 
         describe('last-name', () => {
-            it('it should get last-name', (done) => {
+            it('it should get lastName', (done) => {
                 chai.request(server)
-                    .get('/student/private/last-name')
+                    .get('/student/private/lastName')
                     .set('Authorization', token)
                     .end((err, res) => {
                         expect(err).to.be.null;
@@ -98,9 +98,9 @@ describe('Student get requests', () => {
                     });
             });
 
-            it('it shouldn\'t get last-name without token', (done) => {
+            it('it shouldn\'t get lastName without token', (done) => {
                 chai.request(server)
-                    .get('/student/private/last-name')
+                    .get('/student/private/lastName')
                     .end((err, res) => {
                         expect(err).to.be.null;
                         res.should.have.status(401);

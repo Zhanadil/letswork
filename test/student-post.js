@@ -57,9 +57,9 @@ describe('Student post requests', () => {
 
     describe('/POST /private', () => {
         describe('first-name', () => {
-            it('it should post first-name', (done) => {
+            it('it should post firstName', (done) => {
                 chai.request(server)
-                    .post('/student/private/first-name')
+                    .post('/student/private/firstName')
                     .set('Authorization', token)
                     .send({'firstName': firstName})
                     .end((err, res) => {
@@ -77,9 +77,9 @@ describe('Student post requests', () => {
                     });
             });
 
-            it('it shouldn\'t post first-name without token', (done) => {
+            it('it shouldn\'t post firstName without token', (done) => {
                 chai.request(server)
-                    .post('/student/private/first-name')
+                    .post('/student/private/firstName')
                     .send({'firstName': firstName})
                     .end((err, res) => {
                         expect(err).to.be.null;
@@ -90,9 +90,9 @@ describe('Student post requests', () => {
                     });
             });
 
-            it('it shouldn\'t post first-name without firstName property', (done) => {
+            it('it shouldn\'t post firstName without firstName property', (done) => {
                 chai.request(server)
-                    .post('/student/private/first-name')
+                    .post('/student/private/firstName')
                     .set('Authorization', token)
                     .send({})
                     .end((err, res) => {
@@ -107,9 +107,9 @@ describe('Student post requests', () => {
         });
 
         describe('last-name', () => {
-            it('it should post last-name', (done) => {
+            it('it should post lastName', (done) => {
                 chai.request(server)
-                    .post('/student/private/last-name')
+                    .post('/student/private/lastName')
                     .set('Authorization', token)
                     .send({'lastName': lastName})
                     .end((err, res) => {
@@ -127,9 +127,9 @@ describe('Student post requests', () => {
                     });
             });
 
-            it('it shouldn\'t post last-name without token', (done) => {
+            it('it shouldn\'t post lastName without token', (done) => {
                 chai.request(server)
-                    .post('/student/private/last-name')
+                    .post('/student/private/lastName')
                     .send({'lastName': lastName})
                     .end((err, res) => {
                         expect(err).to.be.null;
@@ -140,9 +140,9 @@ describe('Student post requests', () => {
                     });
             });
 
-            it('it shouldn\'t post last-name without lastName property', (done) => {
+            it('it shouldn\'t post lastName without lastName property', (done) => {
                 chai.request(server)
-                    .post('/student/private/last-name')
+                    .post('/student/private/lastName')
                     .set('Authorization', token)
                     .send({})
                     .end((err, res) => {
