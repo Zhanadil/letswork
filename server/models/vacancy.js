@@ -1,13 +1,22 @@
 const mongoose = require('mongoose');
 
-// Schema of application, contains id of a student who applied/was called, and
-// status of the application.
+// Schema of application, contains vacancyId, company id, student id, and
+// the status of the application.
 const applicationSchema = mongoose.Schema({
+    vacancyId: String,
+    companyId: String,
     studentId: String,
     status: {
         type: String,
-        enum: ['pending', 'accepted', 'rejected', 'discarded'],
+        enum: ['pending', 'canceled', 'accepted', 'rejected'],
     },
+    // С чьей стороны отправлена заявка
+    sender: {
+        type: String,
+        enum: ['student', 'company'],
+    },
+    studentDiscarded: Boolean,
+    companyDiscarded: Boolean,
 });
 
 // Vacancy DB
@@ -23,10 +32,12 @@ const vacancySchema = mongoose.Schema({
     vacancyName: String,
     companyId: String,
     companyName: String,
-    companyApplied: [applicationSchema],
-    studentApplied: [applicationSchema],
 });
 
+const application = mongoose.model('application', applicationSchema);
 const vacancy = mongoose.model('vacancy', vacancySchema);
 
-module.exports = vacancy;
+module.exports = {
+    Application: application,
+    Vacancy: vacancy,
+};

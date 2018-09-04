@@ -1,10 +1,19 @@
 const Company = require('@models/company');
-const Vacancy = require('@models/vacancy');
 const Student = require('@models/student');
+const { Vacancy, Application } = require('@models/vacancy');
 
-// Company controller functions that get/set vacancy related info.
+// Все функции манипулирующие вакансиями со стороны компании
 module.exports = {
-    // Company creates new vacancy:
+    // Создать новую вакансию для компании
+    // req.body: {
+    //      vacancyField: String // Область профессии(IT, Менеджмент, Кулинария)
+    //      vacancyName: String  // Название профессии(Джуниор Программист, Повар)
+    //      description: String  // Описание
+    //      demands: [String]    // Требования
+    //      type: [String]       // Тип работы(Полная ставка, стажировка)
+    //      minSalary: Int       // Мин зарплата
+    //      maxSalary: Int       // Макс зп
+    // }
     newVacancy: async (req, res, next) => {
         var details = {};
         details.companyId = req.account.id;
@@ -35,123 +44,202 @@ module.exports = {
         return res.status(200).json({status: "ok"});
     },
 
-    // Company calls a student for this vacancy:
+    // Компания отправляет заявку на вакансию студенту
+    // req.body: {
+    //      vacancyId: String
+    //      studentId: String
+    // }
     apply: async (req, res, next) => {
-        // Find the vacancy.
-        var vacancy = await Vacancy.findById(req.body.vacancyId, function(err) {
+        // Проверяем айди вакансии на действительность
+        await Vacancy.findById(req.body.vacancyId, (err, vacancy) => {
             if (err) {
-                return res.status(500).json({error: "db error"});
+                return res.status(500).json({error: err.message});
+            }
+            if (!vacancy) {
+                return res.status(400).json({error: "vacancy not found"});
+            }
+            if (vacancy.companyId !== req.account._id.toString()) {
+                return res.status(403).json({error: "wrong vacancyId"});
             }
         });
-        if (!vacancy) {
-            return res.status(400).json({error: "vacancy not found"});
-        }
 
         // Find the student.
-        var student = await Student.findById(req.body.studentId, function(err) {
+        var student = await Student.findById(req.body.studentId, (err) => {
             if (err) {
-                return res.status(500).json({error: "db error"});
+                return res.status(500).json({error: err.message});
             }
         });
         if (!student) {
             return res.status(400).json({error: "student not found"});
         }
 
-        // Add vacancy to student's vacancy list.
-        if (student.vacancies.indexOf(req.body.vacancyId) > -1) {
-            return res.status(409).json({error: "student was already called"});
-        }
-        student.vacancies.push(req.body.vacancyId);
-        await student.save();
+        var application = await Application.findOne(
+                {studentId: req.body.studentId, vacancyId: req.body.vacancyId},
+                (err) => {
+                    if (err) {
+                        return res.status(500).json({error: err.message});
+                    }
+                }
+            );
 
-        // Add student to vacancies students list.
-        vacancy.companyApplied.push({
+        // Если заявка уже существует
+        if (application) {
+            // Отправить заявку повторно можно только если статус
+            // заявки 'canceled' или 'rejected'
+            if (application.status !== 'canceled' && application.status !== 'rejected') {
+                return res.status(409).json({
+                    error: `student can't be called, current status is: ${application.status}`
+                });
+            }
+            application.status = 'pending';
+            application.sender = 'company';
+            application.studentDiscarded = false;
+            application.companyDiscarded = false;
+
+            await application.save();
+
+            return res.status(200).json({status: "ok"});
+        }
+
+        application = await new Application({
+            vacancyId: req.body.vacancyId,
+            companyId: req.account._id,
             studentId: req.body.studentId,
             status: "pending",
+            sender: "company",
+            studentDiscarded: false,
+            companyDiscarded: false,
         });
-        await vacancy.save();
+        await application.save();
+
+        // Add vacancy to student's vacancy list.
+        student.vacancies.push(req.body.vacancyId);
+        await student.save();
 
         return res.status(200).json({status: "ok"});
     },
 
     // Student accepts company's request.
     accept: async (req, res, next) => {
-        // Find the vacancy.
-        var vacancy = await Vacancy.findById(req.body.vacancyId, function(err) {
+        // Проверяем айди вакансии на действительность
+        await Vacancy.findById(req.body.vacancyId, (err, vacancy) => {
             if (err) {
-                return res.status(500).json({error: "db error"});
+                return res.status(500).json({error: err.message});
+            }
+            if (!vacancy) {
+                return res.status(400).json({error: "vacancy not found"});
+            }
+            if (vacancy.companyId !== req.account._id.toString()) {
+                return res.status(403).json({error: "wrong vacancyId"});
             }
         });
-        if (!vacancy) {
-            return res.status(400).json({error: "vacancy not found"});
-        }
 
         // Find the student.
-        var student = await Student.findById(req.body.studentId, function(err) {
+        var student = await Student.findById(req.body.studentId, (err) => {
             if (err) {
-                return res.status(500).json({error: "db error"});
+                return res.status(500).json({error: err.message});
             }
         });
         if (!student) {
             return res.status(400).json({error: "student not found"});
         }
 
-        var studentIndex = vacancy.studentApplied.findIndex((element) => {
-            return element.studentId === req.body.studentId;
-        });
-        if (studentIndex === -1) {
-            return res.status(409).json({error: "company wasn't called"});
+        var application = await Application.findOne(
+                {studentId: req.body.studentId, vacancyId: req.body.vacancyId},
+                (err) => {
+                    if (err) {
+                        return res.status(500).json({error: err.message});
+                    }
+                }
+            );
+
+        // Если заявка не существует
+        if (!application) {
+            return res.status(409).json({
+                error: "application doesn't exist"
+            });
         }
 
-        // If offer was discarded, it couldn't be changed.
-        if (vacancy.studentApplied[studentIndex].status === "discarded") {
-            return res.status(400).json({error: "company already discarded offer"});
+        // Принять заявку можно только если заявка отправлена
+        // со стороны студента и статус заявки 'pending'
+        if (application.status !== 'pending') {
+            return res.status(409).json({
+                error: `application can't be accepted, current status is: ${application.status}`
+            });
         }
+        if (application.sender !== 'student') {
+            return res.status(409).json({
+                error: `company application can't be accepted by the company`
+            });
+        }
+        application.status = 'accepted';
+        application.studentDiscarded = false;
+        application.companyDiscarded = false;
 
-        // Accepts student's offer.
-        vacancy.studentApplied[studentIndex].status = "accepted";
-        await vacancy.save();
+        await application.save();
 
         return res.status(200).json({status: "ok"});
     },
 
     // Company rejects student's request.
     reject: async (req, res, next) => {
-        // Find the vacancy.
-        var vacancy = await Vacancy.findById(req.body.vacancyId, function(err) {
+        console.log(req.account);
+        console.log(req);
+        // Проверяем айди вакансии на действительность
+        await Vacancy.findById(req.body.vacancyId, (err, vacancy) => {
             if (err) {
-                return res.status(500).json({error: "db error"});
+                return res.status(500).json({error: err.message});
+            }
+            if (!vacancy) {
+                return res.status(400).json({error: "vacancy not found"});
+            }
+            if (vacancy.companyId !== req.account._id.toString()) {
+                return res.status(403).json({error: "wrong vacancyId"});
             }
         });
-        if (!vacancy) {
-            return res.status(400).json({error: "vacancy not found"});
-        }
 
         // Find the student.
-        var student = await Student.findById(req.body.studentId, function(err) {
+        var student = await Student.findById(req.body.studentId, (err) => {
             if (err) {
-                return res.status(500).json({error: "db error"});
+                return res.status(500).json({error: err.message});
             }
         });
         if (!student) {
             return res.status(400).json({error: "student not found"});
         }
 
-        var studentIndex = vacancy.studentApplied.findIndex((element) => {
-            return element.studentId === req.body.studentId;
-        });
-        if (studentIndex === -1) {
-            return res.status(409).json({error: "company wasn't called"});
+        var application = await Application.findOne(
+                {studentId: req.body.studentId, vacancyId: req.body.vacancyId},
+                (err) => {
+                    if (err) {
+                        return res.status(500).json({error: err.message});
+                    }
+                }
+            );
+
+        // Если заявка не существует
+        if (!application) {
+            return res.status(409).json({
+                error: "application doesn't exist"
+            });
         }
 
-        // If offer was discarded, it couldn't be changed.
-        if (vacancy.studentApplied[studentIndex].status === "discarded") {
-            return res.status(400).json({error: "company already discarded offer"});
+        // Отклонить заявку можно только если статус заявки 'pending'
+        // или 'accepted' (случайно принятая заявка может быть отклонена)
+        if (application.status !== 'pending' && application.status !== 'accepted') {
+            return res.status(409).json({
+                error: `application can't be rejected, current status is: ${application.status}`
+            });
         }
+        // Отклонить заявку можно только если она отправлена студентом
+        if (application.sender !== 'student') {
+            return res.status(409).json({
+                error: `company application can't be rejected by the company`
+            });
+        }
+        application.status = 'rejected';
 
-        // Reject offer.
-        vacancy.studentApplied[studentIndex].status = "rejected";
-        await vacancy.save();
+        await application.save();
 
         return res.status(200).json({status: "ok"});
     },

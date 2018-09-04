@@ -1,4 +1,4 @@
-const Vacancy = require('@models/vacancy');
+const { Vacancy } = require('@models/vacancy');
 
 // Public controller functions that get, but do not change all private
 // vacancy related information.
