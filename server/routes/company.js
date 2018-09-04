@@ -14,6 +14,7 @@ const { validateBody, schemas } = require('@helpers/routeHelpers');
 const CompanyAuthController = require('@controllers/company/auth');
 const CompanyProfileController = require('@controllers/company/profile');
 const CompanyVacancyController = require('@controllers/company/vacancy');
+const VacancyController = require('@controllers/vacancy');
 
 // **************  All company authorization related requests ****************
 
@@ -83,21 +84,25 @@ vacancyRouter.post('/apply',
     validateBody(schemas.companyVacancyApplicationSchema),
     CompanyVacancyController.apply);
 
+vacancyRouter.post('/cancel',
+    validateBody(schemas.companyVacancyApplicationSchema),
+    VacancyController.changeStatus(VacancyController.statusRequirements.companyCancel, "canceled"));
+
 vacancyRouter.post('/accept',
     validateBody(schemas.companyVacancyApplicationSchema),
-    CompanyVacancyController.accept);
+    VacancyController.changeStatus(VacancyController.statusRequirements.companyAccept, "accepted"));
 
 vacancyRouter.post('/reject',
     validateBody(schemas.companyVacancyApplicationSchema),
-    CompanyVacancyController.reject);
+    VacancyController.changeStatus(VacancyController.statusRequirements.companyReject, "rejected"));
 
 vacancyRouter.post('/discard',
     validateBody(schemas.companyVacancyApplicationSchema),
-    CompanyVacancyController.discard);
+    VacancyController.companyDiscardApplication);
 
-vacancyRouter.post('/get',
-    validateBody(schemas.getVacancySchema),
-    CompanyVacancyController.getVacancies);
+vacancyRouter.get('/getVacancies', VacancyController.getCompanyVacancies);
+
+vacancyRouter.get('/getApplications', VacancyController.getCompanyApplications);
 
 router.use('/vacancy', vacancyRouter);
 

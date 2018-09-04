@@ -1,4 +1,4 @@
-const Vacancy = require('@models/vacancy');
+const { Vacancy } = require('@models/vacancy');
 
 // Setting up filters based on request
 filterOut = function(filter) {

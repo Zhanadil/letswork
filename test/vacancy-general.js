@@ -3,7 +3,7 @@ require('module-alias/register');
 
 const mongoose = require("mongoose");
 const Company = require('@models/company');
-const Vacancy = require('@models/vacancy');
+const { Vacancy } = require('@models/vacancy');
 const JWT = require('jsonwebtoken');
 const { JWT_SECRET } = require('@configuration');
 const { signToken } = require('@controllers/helpers/token');
@@ -33,8 +33,6 @@ describe('General vacancy requests', () => {
             vacancyName: 'SWE Intern',
             companyId: '1',
             companyName: 'company1',
-            companyApplied: [{studentId: '1', status: 'pending'}],
-            studentApplied: [],
         },{
             description: faker.lorem.words(),
             demands: [faker.lorem.words()],
@@ -45,8 +43,6 @@ describe('General vacancy requests', () => {
             vacancyName: 'SWE',
             companyId: '2',
             companyName: 'company2',
-            companyApplied: [],
-            studentApplied: [{studentId: '2', status: 'pending'}],
         },{
             description: faker.lorem.words(),
             demands: [faker.lorem.words()],
@@ -57,8 +53,6 @@ describe('General vacancy requests', () => {
             vacancyName: 'doctor',
             companyId: '3',
             companyName: 'company3',
-            companyApplied: [{studentId: '3', status: 'pending'}],
-            studentApplied: [],
         },{
             description: faker.lorem.words(),
             demands: [faker.lorem.words()],
@@ -69,8 +63,6 @@ describe('General vacancy requests', () => {
             vacancyName: 'doctor',
             companyId: '4',
             companyName: 'company4',
-            companyApplied: [],
-            studentApplied: [{studentId: '4', status: 'pending'}],
         }];
     var vacancyids = [];
     before((done) => {
@@ -207,8 +199,7 @@ describe('General vacancy requests', () => {
                         'minSalary', 'maxSalary'
                     );
                     expect(res.body[0]).to.not.have.all.keys(
-                        'vacancyField', 'vacancyName', 'companyId',
-                        'companyApplied', 'studentApplied'
+                        'vacancyField', 'vacancyName', 'companyId'
                     )
                     expect(res.body[1]).to.be.an('object');
                     expect(res.body[1]).to.have.all.keys(
@@ -216,8 +207,7 @@ describe('General vacancy requests', () => {
                         'minSalary', 'maxSalary'
                     );
                     expect(res.body[1]).to.not.have.all.keys(
-                        'vacancyField', 'vacancyName', 'companyId',
-                        'companyApplied', 'studentApplied'
+                        'vacancyField', 'vacancyName', 'companyId'
                     )
                     expect(res.body[0]._id).to.be.eql(vacancyids[3]);
                     expect(res.body[0].description).to.be.eql(vacancies[3].description);
@@ -234,7 +224,7 @@ describe('General vacancy requests', () => {
                     done();
                 });
         });
-        it('it should require {vacancyField, vacancyName, companyId, companyApplied, studentApplied}', (done) => {
+        it('it should require {vacancyField, vacancyName, companyId}', (done) => {
             chai.request(server)
                 .post('/vacancy/1/2')
                 .send({
@@ -242,8 +232,6 @@ describe('General vacancy requests', () => {
                         'vacancyField': 1,
                         'vacancyName': 1,
                         'companyId': 1,
-                        'companyApplied': 1,
-                        'studentApplied': 1,
                     },
                 })
                 .end((err, res) => {
@@ -252,8 +240,7 @@ describe('General vacancy requests', () => {
                     expect(res.body.length).to.be.eql(2);
                     expect(res.body[0]).to.be.an('object');
                     expect(res.body[0]).to.have.all.keys(
-                        '_id', 'vacancyField', 'vacancyName', 'companyId',
-                        'companyApplied', 'studentApplied'
+                        '_id', 'vacancyField', 'vacancyName', 'companyId'
                     )
                     expect(res.body[0]).to.not.have.all.keys(
                         'description', 'demands', 'type', 'companyName',
@@ -261,8 +248,7 @@ describe('General vacancy requests', () => {
                     );
                     expect(res.body[1]).to.be.an('object');
                     expect(res.body[1]).to.have.all.keys(
-                        '_id', 'vacancyField', 'vacancyName', 'companyId',
-                        'companyApplied', 'studentApplied'
+                        '_id', 'vacancyField', 'vacancyName', 'companyId'
                     )
                     expect(res.body[1]).to.not.have.all.keys(
                         'description', 'demands', 'type', 'companyName',
@@ -272,26 +258,10 @@ describe('General vacancy requests', () => {
                     expect(res.body[0].vacancyField).to.be.eql(vacancies[1].vacancyField);
                     expect(res.body[0].vacancyName).to.be.eql(vacancies[1].vacancyName);
                     expect(res.body[0].companyId).to.be.eql(vacancies[1].companyId);
-                    expect(res.body[0].companyApplied).to.be.an('array');
-                    expect(res.body[0].companyApplied.length).to.be.eql(0);
-                    expect(res.body[0].studentApplied).to.be.an('array');
-                    expect(res.body[0].studentApplied.length).to.be.eql(1);
-                    expect(res.body[0].studentApplied.studentId).
-                        to.be.eql(vacancies[1].studentApplied.studentId);
-                    expect(res.body[0].studentApplied.status).
-                        to.be.eql(vacancies[1].studentApplied.status);
                     expect(res.body[1]._id).to.be.eql(vacancyids[0]);
                     expect(res.body[1].vacancyField).to.be.eql(vacancies[0].vacancyField);
                     expect(res.body[1].vacancyName).to.be.eql(vacancies[0].vacancyName);
                     expect(res.body[1].companyId).to.be.eql(vacancies[0].companyId);
-                    expect(res.body[1].companyApplied).to.be.an('array');
-                    expect(res.body[1].companyApplied.length).to.be.eql(1);
-                    expect(res.body[1].studentApplied.studentId).
-                        to.be.eql(vacancies[0].studentApplied.studentId);
-                    expect(res.body[1].studentApplied.status).
-                        to.be.eql(vacancies[0].studentApplied.status);
-                    expect(res.body[1].studentApplied).to.be.an('array');
-                    expect(res.body[1].studentApplied.length).to.be.eql(0);
                     done();
                 });
         });
@@ -319,8 +289,7 @@ describe('General vacancy requests', () => {
                         'minSalary', 'maxSalary'
                     );
                     expect(res.body).to.not.have.all.keys(
-                        'vacancyField', 'vacancyName', 'companyId',
-                        'companyApplied', 'studentApplied'
+                        'vacancyField', 'vacancyName', 'companyId'
                     )
                     expect(res.body._id).to.be.eql(vacancyids[0]);
                     expect(res.body.description).to.be.eql(vacancies[0].description);

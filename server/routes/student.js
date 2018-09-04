@@ -13,6 +13,7 @@ const { validateBody, schemas } = require('@helpers/routeHelpers');
 const StudentsAuthController = require('@controllers/student/auth');
 const StudentsProfileController = require('@controllers/student/profile');
 const StudentsVacancyController = require('@controllers/student/vacancy');
+const VacancyController = require('@controllers/vacancy');
 
 // ***********  All student authorization related requests  *****************
 
@@ -88,21 +89,23 @@ vacancyRouter.post('/apply',
     validateBody(schemas.studentVacancyApplicationSchema),
     StudentsVacancyController.apply);
 
+vacancyRouter.post('/cancel',
+    validateBody(schemas.studentVacancyApplicationSchema),
+    VacancyController.changeStatus(VacancyController.statusRequirements.studentCancel, "canceled"));
+
 vacancyRouter.post('/accept',
     validateBody(schemas.studentVacancyApplicationSchema),
-    StudentsVacancyController.accept);
+    VacancyController.changeStatus(VacancyController.statusRequirements.studentAccept, "accepted"));
 
 vacancyRouter.post('/reject',
     validateBody(schemas.studentVacancyApplicationSchema),
-    StudentsVacancyController.reject);
+    VacancyController.changeStatus(VacancyController.statusRequirements.studentReject, "rejected"));
 
 vacancyRouter.post('/discard',
     validateBody(schemas.studentVacancyApplicationSchema),
-    StudentsVacancyController.discard);
+    VacancyController.studentDiscardApplication);
 
-vacancyRouter.post('/get',
-    validateBody(schemas.getVacancySchema),
-    StudentsVacancyController.getVacancies);
+vacancyRouter.get('/getApplications', VacancyController.getStudentApplications);
 
 router.use('/vacancy', vacancyRouter);
 
