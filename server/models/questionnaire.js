@@ -12,7 +12,7 @@ const questionsSchema = mongoose.Schema({
     questionText: String,
     questionType: {
         type: String,
-        enum: ['open', 'multichoice', 'singlechoice', 'dropdown'],
+        enum: ['openended', 'multichoice', 'singlechoice', 'dropdown'],
     },
     answers: [String],
 });
