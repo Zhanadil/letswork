@@ -5,6 +5,7 @@ const router = express.Router();
 const authRouter = express.Router();
 const privateRouter = express.Router();
 const vacancyRouter = express.Router();
+const questionnaireRouter = express.Router();
 
 const passport = require('passport');
 const passportConfig = require('@root/passport');
@@ -108,5 +109,15 @@ vacancyRouter.post('/discard',
 vacancyRouter.get('/getApplications', VacancyController.getStudentApplications);
 
 router.use('/vacancy', vacancyRouter);
+
+// ***************************  Questionnaire  ********************************
+
+questionnaireRouter.use(passport.authorize('jwt-student', {session: false}));
+
+questionnaireRouter.post('/answer/:setNumber/:questionNumber',
+    validateBody(schemas.studentAnswerSchema),
+    StudentsProfileController.updateQuestionnaireAnswer);
+
+router.use('/questionnaire', questionnaireRouter);
 
 module.exports = router;

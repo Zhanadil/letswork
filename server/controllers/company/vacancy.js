@@ -183,8 +183,6 @@ module.exports = {
 
     // Company rejects student's request.
     reject: async (req, res, next) => {
-        console.log(req.account);
-        console.log(req);
         // Проверяем айди вакансии на действительность
         await Vacancy.findById(req.body.vacancyId, (err, vacancy) => {
             if (err) {

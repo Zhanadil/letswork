@@ -1,8 +1,12 @@
 const fs = require('fs');
 const path = require('path');
+const to = require('await-to-js').default;
 const Student = require('@models/student');
+const {Question, Answer} = require('@models/questionnaire');
 const logger = require('@root/logger');
 
+// Вспомогательная функция, цель которой убрать credentials которая содержит
+// пароль и вытащить оттуда email
 unnestStudent = function(student) {
     var result = {};
     result.id = student.id;
@@ -241,5 +245,106 @@ module.exports = {
                 return res.status(200).send({status: 'ok'});
         	});
         }
+    },
+
+    // Создать(обновить если существует) ответ на вопрос
+    //
+    // POST /student/questionnaire/answer/:setNumber/:questionNumber
+    // req.body: {
+    //      studentId: String
+    // }
+    updateQuestionnaireAnswer: async (req, res, next) => {
+        var err, question, answer;
+        // Находим вопрос в базе данных
+        [err, question] = await to(Question.findOne({
+            setNumber: req.params.setNumber,
+            questionNumber: req.params.questionNumber
+        }));
+        if (err) {
+            return res.status(500).json({error: err.message});
+        }
+        if (!question) {
+            return res.status(409).json({error: "Question doesn't exist"});
+        }
+        // Если ответов несколько а тип вопроса не многовариантный, возвращаем ошибку
+        if (question.questionType !== "multichoice" && req.body.answers.length > 1) {
+            return res.status(409).json({error: `${question.questionType} type question can't accept multiple answers`});
+        }
+        // Находим уже существующий ответ
+        [err, answer] = await to(Answer.findOne({
+            studentId: req.account._id,
+            setNumber: req.params.setNumber,
+            questionNumber: req.params.questionNumber,
+        }));
+        if (err) {
+            return res.status(500).json({error: err.message});
+        }
+        if (!answer) {
+            // Если ответ не существует, то создаем новый
+            answer = await new Answer({
+                studentId: req.account._id,
+                setNumber: req.params.setNumber,
+                questionNumber: req.params.questionNumber,
+                answers: req.body.answers,
+            });
+            await answer.save();
+            return res.status(200).json({status: "ok"});
+        }
+        // Меняем его, если он существует
+        answer.answers = req.body.answers;
+        await answer.save();
+        return res.status(200).json({status: "ok"});
+    },
+
+    // Вернуть ответ студента на вопрос
+    //
+    // GET /student/questionnaire/answer/:studentId/:setNumber/:questionNumber
+    getQuestionnaireAnswer: async (req, res, next) => {
+        var err, answer;
+        // Находим ответ
+        [err, answer] = await to(Answer.findOne({
+            studentId: req.params.studentId,
+            setNumber: req.params.setNumber,
+            questionNumber: req.params.questionNumber,
+        }));
+        if (err) {
+            return res.status(500).json({error: err.message});
+        }
+        // Если студент не ответил, возвращаем соответствующее сообщение
+        if (!answer) {
+            return res.status(204).json({"status": "Student didn't answer this question"});
+        }
+        return res.status(200).json({answers: answer.answers});
+    },
+
+    // Вернуть ответы студента на вопросы в сете
+    //
+    // GET /student/questionnaire/set-answers/:studentId/:setNumber
+    getQuestionnaireSetAnswers: async (req, res, next) => {
+        var err, answers;
+        // Находим ответ
+        [err, answers] = await to(Answer.find({
+            studentId: req.params.studentId,
+            setNumber: req.params.setNumber,
+        }).sort({questionNumber: 1}));
+        if (err) {
+            return res.status(500).json({error: err.message});
+        }
+        return res.status(200).json({answers});
+    },
+
+    // Вернуть все ответы студента на вопросы
+    //
+    // GET /student/questionnaire/all-answers/:studentId
+    getAllQuestionnaireAnswers: async (req, res, next) => {
+        var err, answers;
+        // Находим ответ
+        [err, answers] = await to(Answer.find({
+            studentId: req.params.studentId,
+        }).sort({setNumber: 1, questionNumber: 1}));
+        if (err) {
+            return res.status(500).json({error: err.message});
+        }
+        return res.status(200).json({answers});
     },
 };

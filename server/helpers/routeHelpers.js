@@ -55,5 +55,8 @@ module.exports = {
             incoming: joi.string(),
             outgoing: joi.string()
         }),
+        studentAnswerSchema: joi.object().keys({
+            answers: joi.array().items(joi.string()),
+        }),
     },
 };

@@ -5,10 +5,13 @@ const router = express.Router();
 const companyRouter = express.Router();
 const studentRouter = express.Router();
 const vacancyRouter = express.Router();
+const questionnaireRouter = express.Router();
 
+const QuestionnaireController = require('@controllers/questionnaire.js');
 const GeneralCompanyController = require('@controllers/general/company');
 const GeneralStudentController = require('@controllers/general/student');
 const GeneralVacancyController = require('@controllers/general/vacancy');
+const StudentProfileController = require('@controllers/student/profile');
 
 // ***************************  Vacancies  *****************************
 
@@ -54,5 +57,27 @@ studentRouter.get('/image-avatar/*', function(req, res, next) {
 });
 
 router.use('/student', studentRouter);
+
+// ***************************  Students  *****************************
+
+questionnaireRouter.get('/question/:setNumber/:questionNumber',
+    QuestionnaireController.getQuestion);
+
+questionnaireRouter.get('/set-questions/:setNumber',
+    QuestionnaireController.getSetQuestions);
+
+questionnaireRouter.get('/all-questions',
+    QuestionnaireController.getAllQuestions);
+
+questionnaireRouter.get('/answer/:studentId/:setNumber/:questionNumber',
+    StudentProfileController.getQuestionnaireAnswer);
+
+questionnaireRouter.get('/set-answers/:studentId/:setNumber',
+    StudentProfileController.getQuestionnaireSetAnswers);
+
+questionnaireRouter.get('/all-answers/:studentId',
+    StudentProfileController.getAllQuestionnaireAnswers);
+
+router.use('/questionnaire', questionnaireRouter);
 
 module.exports = router;
