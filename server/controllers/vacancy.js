@@ -326,7 +326,7 @@ module.exports = {
             });
 
         if (!application) {
-            res.status(400).json({error: "application doesn't exist"});
+            return res.status(400).json({error: "application doesn't exist"});
         }
 
         application.studentDiscarded = true;
@@ -347,7 +347,7 @@ module.exports = {
             });
 
         if (!application) {
-            res.status(400).json({error: "application doesn't exist"});
+            return res.status(400).json({error: "application doesn't exist"});
         }
 
         application.companyDiscarded = true;
