@@ -2,8 +2,6 @@ const winston = require('winston');
 const config = require('config');
 const format = winston.format;
 
-const logDirectory = 'logs';
-
 // Logger logs both to files located in logs/ and to console.
 // If it's in production, then it logs only everything above warn level to console.
 // format is "${timestamp} [${userInfo}] ${log_level}: ${message}"
@@ -11,7 +9,7 @@ const logger = winston.createLogger({
     transports: [
         new winston.transports.File({
             filename: config.util.getEnv('NODE_ENV') === 'dev'
-                ? `${logDirectory}/access_dev.log` : `${logDirectory}/access_prod.log`,
+                ? `${config.LOGS_DIRECTORY}/access_dev.log` : `${config.LOGS_DIRECTORY}/access_prod.log`,
             level: config.util.getEnv('NODE_ENV') === 'dev' ? 'debug' : 'info',
         }),
         new winston.transports.Console({

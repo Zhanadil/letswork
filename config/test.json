@@ -1,4 +1,5 @@
 {
-    "DBHost": "mongodb://localhost:27017/iloveworktest",
-    "RESOURCES_DIRECTORY": "/resources_test"
+    "DBHost": "mongodb://localhost:27017/love2work_test",
+    "LOGS_DIRECTORY": "srv/love2work/test/logs",
+    "RESOURCES_DIRECTORY": "srv/love2work/test/resources"
 }
