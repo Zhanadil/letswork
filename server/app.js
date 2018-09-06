@@ -10,9 +10,6 @@ const cors = require('cors');
 const JWT = require('jsonwebtoken');
 const { JWT_SECRET } = require('@configuration');
 
-// WARNING: This line has to be above all router files.
-config.RESOURCES_DIRECTORY = path.join(require('os').homedir(), config.RESOURCES_DIRECTORY);
-
 const logger = require('@root/logger');
 const studentRouter = require('@routes/student');
 const companyRouter = require('@routes/company');
