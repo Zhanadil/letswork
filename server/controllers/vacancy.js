@@ -1,5 +1,7 @@
 const JWT = require('jsonwebtoken');
 
+const to = require('await-to-js').default;
+
 const Company = require('@models/company');
 const Student = require('@models/student');
 const { Vacancy, Application } = require('@models/vacancy');
@@ -366,74 +368,167 @@ module.exports = {
         });
     },
 
-    getCompanyApplications: (req, res, next) => {
-        var vacancies;
-        var applications;
-        var studentIds = [];
-        var students;
-        Vacancy.find({"_id": {"$in": req.account.vacancies}}, (err, queryVacancies) => {
-            if (err) {
-                return res.status(500).json({error: err.message});
+    // Возвращает все заявки связанные с компанией и всю информацию о вакансиях
+    // и студентах связанных с этими заявками
+    getCompanyApplications: async (req, res, next) => {
+        var err, applications;
+        var vacancies, vacancyIds = [];
+        var students, studentIds = [];
+
+        // У нас есть четыре типа фильтров
+        var applicationsFilter = {};
+        applicationsFilter.companyId = req.account._id;
+        applicationsFilter.companyDiscarded = false;
+        // 1: Входящие необработанные заявки
+        if (req.body.statusId === 1) {
+            applicationsFilter.sender = "student";
+            applicationsFilter.status = "pending";
+        }
+        // 2: Исходящие необработанные заявки
+        if (req.body.statusId === 2) {
+            applicationsFilter.sender = "company";
+            applicationsFilter.status = "pending";
+        }
+        // 3: Принятые заявки
+        if (req.body.statusId === 3) {
+            applicationsFilter.status = "accepted";
+        }
+        // 4: Отклоненные заявки
+        if (req.body.statusId === 4) {
+            applicationsFilter.status = "rejected";
+        }
+        // Находим все заявки студента, которые он не скрыл в отфильтрованном виде
+        [err, applications] = await to(Application.find(applicationsFilter));
+        if (err) {
+            return res.status(500).json({error: err.message});
+        }
+
+        // Выписываем айди отфильтрованных вакансий и айди студентов находящихся в заявке
+        applications.forEach(v => {
+            vacancyIds.push(v.vacancyId);
+            if (studentIds.indexOf(v.studentId) === -1) {
+                studentIds.push(v.studentId);
             }
-            vacancies = queryVacancies;
-            Application.find({"vacancyId": {"$in": req.account.vacancies}, "companyDiscarded": false}, (err, queryApplications) => {
-                if (err) {
-                    return res.status(500).json({error: err.message});
+        });
+
+        // Находим все эти вакансии
+        [err, vacancies] = await to(
+            Vacancy.find({
+                "_id": {
+                    "$in": vacancyIds
                 }
-                applications = queryApplications;
-                applications.forEach(v => {
-                    studentIds.push(v.studentId);
-                });
-                Student.find({"_id": {"$in": studentIds}},
-                            {"credentials.password": 0, "credentials.method": 0},
-                            (err, queryStudents) => {
-                    if (err) {
-                        return res.status(500).json({error: err.message});
+            })
+        );
+        if (err) {
+            return res.status(500).json({error: err.message});
+        }
+
+        // Находим всех студентов, айди которых мы выписали
+        [err, students] = await to(
+            Student.find(
+                {
+                    "_id": {
+                        "$in": studentIds
                     }
-                    students = queryStudents;
-                    return res.status(200).json({
-                        vacancies,
-                        applications,
-                        students,
-                    });
-                });
-            });
+                },
+                {
+                    "credentials.password": 0,
+                    "credentials.method": 0
+                }
+            )
+        );
+        if (err) {
+            return res.status(500).json({error: err.message});
+        }
+
+        // Возвращаем все данные:
+        //  Вакансии, Заявки, Студенты
+        return res.status(200).json({
+            vacancies,
+            applications,
+            students,
         });
     },
 
-    getStudentApplications: (req, res, next) => {
-        var vacancies;
-        var applications;
-        var companyIds = [];
-        var companies;
-        Vacancy.find({"_id": {"$in": req.account.vacancies}}, (err, queryVacancies) => {
-            if (err) {
-                return res.status(500).json({error: err.message});
+    // Возвращает все заявки связанные со студентом и всю информацию о вакансиях
+    // и компаниях связанных с этими заявками
+    getStudentApplications: async (req, res, next) => {
+        var err;
+        var vacancies, vacancyIds = [], applications;
+        var companies, companyIds = [];
+
+        // У нас есть четыре типа фильтров
+        var applicationsFilter = {};
+        applicationsFilter.studentId = req.account._id;
+        applicationsFilter.studentDiscarded = false;
+        // 1: Входящие необработанные заявки
+        if (req.body.statusId === 1) {
+            applicationsFilter.sender = "company";
+            applicationsFilter.status = "pending";
+        }
+        // 2: Исходящие необработанные заявки
+        if (req.body.statusId === 2) {
+            applicationsFilter.sender = "student";
+            applicationsFilter.status = "pending";
+        }
+        // 3: Принятые заявки
+        if (req.body.statusId === 3) {
+            applicationsFilter.status = "accepted";
+        }
+        // 4: Отклоненные заявки
+        if (req.body.statusId === 4) {
+            applicationsFilter.status = "rejected";
+        }
+        // Находим все заявки студента, которые он не скрыл в отфильтрованном виде
+        [err, applications] = await to(Application.find(applicationsFilter));
+        if (err) {
+            return res.status(500).json({error: err.message});
+        }
+
+        // Выписываем айди отфильтрованных вакансий и айди компаний создавших эти вакансии
+        applications.forEach(v => {
+            vacancyIds.push(v.vacancyId);
+            if (companyIds.indexOf(v.companyId) === -1) {
+                companyIds.push(v.companyId);
             }
-            vacancies = queryVacancies;
-            Application.find({"vacancyId": {"$in": req.account.vacancies}, "studentDiscarded": false},
-                    (err, queryApplications) => {
-                if (err) {
-                    return res.status(500).json({error: err.message});
+        });
+
+        // Находим все эти вакансии
+        [err, vacancies] = await to(
+            Vacancy.find({
+                "_id": {
+                    "$in": vacancyIds
                 }
-                applications = queryApplications;
-                applications.forEach(v => {
-                    companyIds.push(v.companyId);
-                });
-                Company.find({"_id": {"$in": companyIds}},
-                            {"credentials.password": 0, "credentials.method": 0},
-                            (err, queryCompanies) => {
-                    if (err) {
-                        return res.status(500).json({error: err.message});
+            })
+        );
+        if (err) {
+            return res.status(500).json({error: err.message});
+        }
+
+        // Находим все компании, айди которых мы выписали
+        [err, companies] = await to(
+            Company.find(
+                {
+                    "_id": {
+                        "$in": companyIds
                     }
-                    company = queryCompanies;
-                    return res.status(200).json({
-                        vacancies,
-                        applications,
-                        company,
-                    });
-                });
-            });
+                },
+                {
+                    "credentials.password": 0,
+                    "credentials.method": 0
+                }
+            )
+        );
+        if (err) {
+            return res.status(500).json({error: err.message});
+        }
+
+        // Возвращаем все данные:
+        //  Вакансии, Заявки, Компании
+        return res.status(200).json({
+            vacancies,
+            applications,
+            companies,
         });
     },
 };

@@ -88,7 +88,7 @@ vacancyRouter.use(passport.authorize('jwt-student', {session: false}));
 
 vacancyRouter.post('/apply',
     validateBody(schemas.studentVacancyApplicationSchema),
-    StudentsVacancyController.apply);
+    VacancyController.studentApplication);
 
 vacancyRouter.post('/cancel',
     validateBody(schemas.studentVacancyApplicationSchema),
@@ -106,7 +106,9 @@ vacancyRouter.post('/discard',
     validateBody(schemas.studentVacancyApplicationSchema),
     VacancyController.studentDiscardApplication);
 
-vacancyRouter.get('/getApplications', VacancyController.getStudentApplications);
+vacancyRouter.route('/getApplications')
+    .get(VacancyController.getStudentApplications)
+    .post(VacancyController.getStudentApplications);
 
 router.use('/vacancy', vacancyRouter);
 
