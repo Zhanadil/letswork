@@ -107,8 +107,12 @@ vacancyRouter.post('/discard',
     VacancyController.studentDiscardApplication);
 
 vacancyRouter.post('/:page/:limit',
-    validateBody(schemas.getAllVacanciesAsStudent),
+    validateBody(schemas.getAllVacancies),
     VacancyController.getAllVacanciesAsStudent);
+
+vacancyRouter.post('/:id',
+    validateBody(schemas.getVacancyById),
+    VacancyController.getVacancyByIdAsStudent);
 
 vacancyRouter.route('/getApplications')
     .get(VacancyController.getStudentApplications)
