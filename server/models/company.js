@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
 
-const credentialsSchema = require('@models/credentials_schema');
+const credentialsSchema = require('@models/credentials_schema').credentialsSchema;
 
 // Companies DB
 // Company can log in via email, google or [facebook(currently not working)].

@@ -15,8 +15,18 @@ const credentialsSchema = mongoose.Schema({
     googleId: String
 });
 
+credentialsSchema.methods.isValidPassword = async function(newPassword) {
+    try {
+        return await bcrypt.compare(newPassword, this.password);
+    } catch(error) {
+        throw new Error(error);
+    }
+}
+
+const temporaryCredentialsSchema = credentialsSchema.clone();
+
 // Hash password before saving it.
-credentialsSchema.pre('save', async function(next) {
+temporaryCredentialsSchema.pre('save', async function(next) {
     try {
         if (this.method !== 'local') {
             return next();
@@ -35,12 +45,7 @@ credentialsSchema.pre('save', async function(next) {
     }
 });
 
-credentialsSchema.methods.isValidPassword = async function(newPassword) {
-    try {
-        return await bcrypt.compare(newPassword, this.password);
-    } catch(error) {
-        throw new Error(error);
-    }
-}
-
-module.exports = credentialsSchema;
+module.exports = {
+    credentialsSchema,
+    temporaryCredentialsSchema,
+};

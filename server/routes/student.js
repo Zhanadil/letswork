@@ -22,6 +22,8 @@ authRouter.post('/signup',
     validateBody(schemas.studentRegSchema),
     StudentsAuthController.signUp);
 
+authRouter.get('/verify/:url', StudentsAuthController.verify);
+
 authRouter.post('/signin',
     validateBody(schemas.authSchema),
     passport.authorize('local-student', {session: false}),

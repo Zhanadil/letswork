@@ -22,6 +22,8 @@ authRouter.post('/signup',
     validateBody(schemas.companyRegSchema),
     CompanyAuthController.signUp);
 
+authRouter.get('/verify/:url', CompanyAuthController.verify);
+
 authRouter.post('/signin',
     validateBody(schemas.authSchema),
     passport.authorize('local-company', {session: false}),
