@@ -485,7 +485,6 @@ module.exports = {
     getAllVacanciesAsStudent: async (req, res, next) => {
         var requirements = req.body.requirements || {};
         var filters = filterOut(req.body.filter);
-        console.log(filters);
         var err, vacancies;
         var applications
 
