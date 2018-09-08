@@ -542,6 +542,9 @@ module.exports = {
                 }
                 return false;
             });
+            if (vacancies[i].status === undefined) {
+                vacancies[i].status = 0;
+            }
         });
         return res.status(200).json({vacancies});
     },
