@@ -58,5 +58,24 @@ module.exports = {
         studentAnswerSchema: joi.object().keys({
             answers: joi.array().items(joi.string()),
         }),
+        getAllVacanciesAsStudent: joi.object().keys({
+            filter: joi.object().keys({
+                minSalary: joi.number(),
+                maxSalary: joi.number(),
+                type: joi.array().items(joi.string()),
+                vacancyField: joi.string(),
+            }),
+            requirements: joi.object().keys({
+                description: joi.number(),
+                demands: joi.number(),
+                type: joi.number(),
+                minSalary: joi.number(),
+                maxSalary: joi.number(),
+                vacancyField: joi.number(),
+                vacancyName: joi.number(),
+                companyId: joi.number(),
+                companyName: joi.number(),
+            }),
+        }),
     },
 };
