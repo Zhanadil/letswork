@@ -7,8 +7,24 @@ const Student = require('@models/student');
 const { Vacancy, Application } = require('@models/vacancy');
 const { JWT_SECRET } = require('@configuration');
 
+statusId = (status, sender) => {
+    if (status === "pending" && sender === "company") {
+        return 1;
+    }
+    if (status === "pending" && sender === "student") {
+        return 2;
+    }
+    if (status === "accepted") {
+        return 3;
+    }
+    if (status === "rejected") {
+        return 4;
+    }
+    return 0;
+}
+
 // Setting up filters based on request
-filterOut = function(filter) {
+filterOut = filter => {
     if (filter === undefined) {
         return {};
     }
@@ -524,20 +540,8 @@ module.exports = {
         vacancies.forEach((vacancy, i, vacancies) => {
             applications.some(application => {
                 if (vacancy._id.toString() === application.vacancyId) {
-                    if (application.status === "pending" &&
-                        application.sender === "company") {
-                        vacancies[i].status = 1;
-                    }
-                    if (application.status === "pending" &&
-                        application.sender === "student") {
-                        vacancies[i].status = 2;
-                    }
-                    if (application.status === "accepted") {
-                        vacancies[i].status = 3;
-                    }
-                    if (application.status === "rejected") {
-                        vacancies[i].status = 4;
-                    }
+                    vacancies[i].status =
+                        statusId(application.status, application.sender);
                     return true;
                 }
                 return false;
@@ -547,6 +551,56 @@ module.exports = {
             }
         });
         return res.status(200).json({vacancies});
+    },
+
+    // Возвращает вакансию по айди и если студент участвовал в ней, то вместе со статусом.
+    // Запрос содержит параметры которые нужно вернуть
+    // К примеру:
+    // request.requirements = {vacancyName: 1, companyId: 1}
+    // Из информации вернет только название вакансии и айди компании
+    getVacancyByIdAsStudent: async (req, res, next) => {
+        var requirements = req.body.requirements || {};
+        var err, vacancy;
+        var application
+
+        // Находим все вакансии в пагинированном виде
+        [err, vacancy] = await to(
+            Vacancy.findById(req.params.id, requirements).lean().exec()
+        );
+        if (err) {
+            return res.status(500).json({error: err.message});
+        }
+        if (!vacancy) {
+            return res.status(204).json({error: "Vacancy doesn't exist"});
+        }
+
+        // Находим все заявки студента которые он не скрыл
+        [err, application] = await to(
+            Application.findOne(
+                {
+                    vacancyId: req.params.id,
+                    studentId: req.account._id,
+                    studentDiscarded: false,
+                },
+                {
+                    vacancyId: 1,
+                    status: 1,
+                    sender: 1,
+                }
+            )
+        );
+        if (err) {
+            return res.status(500).json({error: err.message});
+        }
+
+        // Проверяем если на вакансию есть заявка студента,
+        // то добавляем статус заявки
+        if (application) {
+            vacancy.status = statusId(application.status, application.sender);
+        } else {
+            vacancy.status = 0;
+        }
+        return res.status(200).json({vacancy});
     },
 
 
