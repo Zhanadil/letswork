@@ -7,6 +7,27 @@ const Student = require('@models/student');
 const { Vacancy, Application } = require('@models/vacancy');
 const { JWT_SECRET } = require('@configuration');
 
+// Setting up filters based on request
+filterOut = function(filter) {
+    if (filter === undefined) {
+        return {};
+    }
+    var result = {};
+    if (filter.minSalary !== undefined) {
+        result.maxSalary = {'$gte': filter.minSalary};
+    }
+    if (filter.maxSalary !== undefined) {
+        result.minSalary = {'$lte': filter.maxSalary};
+    }
+    if (filter.type !== undefined) {
+        result.type = {'$in': filter.type};
+    }
+    if (filter.vacancyField !== undefined) {
+        result.vacancyField = filter.vacancyField;
+    }
+    return result;
+}
+
 // Все функции манипулирующие вакансиями
 module.exports = {
     // Создать новую вакансию для компании
@@ -449,6 +470,83 @@ module.exports = {
             students,
         });
     },
+
+    // Возвращает ВСЕ вакансии и если студент участвовал в них, то вместе со статусом.
+    // При этом заранее пагинирует, например: вторая страница 10 запросов
+
+    // Запрос содержит фильтры по мин зп(minSalary), макс зп(maxSalary),
+    // область работы(vacancyField), и др.
+    // Например: request.filter = {minSalary: 100000, type: ["full-time"]}
+    // Также содержит параметры которые нужно вернуть
+    // К примеру:
+    // request.requirements = {vacancyName: 1, companyId: 1}
+    // В таком случае вернет все вакансии с зп выше 100000 на полную ставку
+    // Из информации вернет только название вакансий и айди компании
+    getAllVacanciesAsStudent: async (req, res, next) => {
+        var requirements = req.body.requirements || {};
+        var filters = filterOut(req.body.filter);
+        console.log(filters);
+        var err, vacancies;
+        var applications
+
+        // Находим все вакансии в пагинированном виде
+        [err, vacancies] = await to(
+            Vacancy.find(filters, requirements)
+                .sort({'_id': -1})
+                .skip(req.params.page*req.params.limit)
+                .limit(parseInt(req.params.limit))
+                .lean()
+                .exec()
+        );
+        if (err) {
+            return res.status(500).json({error: err.message});
+        }
+
+        // Находим все заявки студента которые он не скрыл
+        [err, applications] = await to(
+            Application.find(
+                {
+                    studentId: req.account._id,
+                    studentDiscarded: false,
+                },
+                {
+                    vacancyId: 1,
+                    status: 1,
+                    sender: 1,
+                }
+            )
+        );
+        if (err) {
+            return res.status(500).json({error: err.message});
+        }
+
+        // Проверяем если на вакансию есть заявка студента,
+        // то добавляем статус заявки
+        vacancies.forEach((vacancy, i, vacancies) => {
+            applications.some(application => {
+                if (vacancy._id.toString() === application.vacancyId) {
+                    if (application.status === "pending" &&
+                        application.sender === "company") {
+                        vacancies[i].status = 1;
+                    }
+                    if (application.status === "pending" &&
+                        application.sender === "student") {
+                        vacancies[i].status = 2;
+                    }
+                    if (application.status === "accepted") {
+                        vacancies[i].status = 3;
+                    }
+                    if (application.status === "rejected") {
+                        vacancies[i].status = 4;
+                    }
+                    return true;
+                }
+                return false;
+            });
+        });
+        return res.status(200).json({vacancies});
+    },
+
 
     // Возвращает все заявки связанные со студентом и всю информацию о вакансиях
     // и компаниях связанных с этими заявками
