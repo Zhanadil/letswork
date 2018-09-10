@@ -11,6 +11,12 @@ const studentRegSchema = joi.object().keys({
 const companyRegSchema = studentRegSchema.keys({
     name: joi.string().required(),
 });
+const forgotPasswordSchema = joi.object().keys({
+    email: joi.string().email({ minDomainAtoms: 2}).required(),
+});
+const resetPasswordSchema = joi.object().keys({
+    password: joi.string().required(),
+});
 const newVacancySchema = joi.object().keys({
     description: joi.string(),
     demands: joi.array().items(joi.string()),
@@ -80,6 +86,8 @@ module.exports = {
         authSchema,
         studentRegSchema,
         companyRegSchema,
+        forgotPasswordSchema,
+        resetPasswordSchema,
         newVacancySchema,
         studentVacancyApplicationSchema,
         companyVacancyApplicationSchema,

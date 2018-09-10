@@ -57,4 +57,38 @@ module.exports = {
             return info;
         });
     },
+
+    sendStudentForgotPasswordLink: (student) => {
+        var mailOptions = {
+            from: 'znurtoleuov@gmail.com',
+            to: student.credentials.email,
+            subject: 'Запрос на изменение пароля',
+            text: `Доброго времени суток!\n\nНам пришел запрос на изменение пароля на вашем аккаунте.\nЕсли вы понятия не имеете о чем это письмо, то можете смело его проигнорировать.\nВ обратном случае пройдите по ссылке love2work.kz:3000/student/auth/confirm-forgot-password/${student.credentials.forgotPasswordUrl}\n\nСпасибо за внимание!`,
+        };
+
+        transporter.sendMail(mailOptions, function(error, info){
+            if (error) {
+                //TODO(zhanadil): resolve error
+                return null;
+            }
+            return info;
+        });
+    },
+
+    sendCompanyForgotPasswordLink: (company) => {
+        var mailOptions = {
+            from: 'znurtoleuov@gmail.com',
+            to: company.credentials.email,
+            subject: 'Запрос на изменение пароля',
+            text: `Доброго времени суток!\n\nНам пришел запрос на изменение пароля на вашем аккаунте.\nЕсли вы понятия не имеете о чем это письмо, то можете смело его проигнорировать.\nВ обратном случае пройдите по ссылке love2work.kz:3000/company/auth/confirm-forgot-password/${company.credentials.forgotPasswordUrl}\n\nСпасибо за внимание!`,
+        };
+
+        transporter.sendMail(mailOptions, function(error, info){
+            if (error) {
+                //TODO(zhanadil): resolve error
+                return null;
+            }
+            return info;
+        });
+    }
 };

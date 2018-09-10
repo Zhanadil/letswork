@@ -29,6 +29,17 @@ authRouter.post('/signin',
     passport.authorize('local-student', {session: false}),
     StudentsAuthController.signIn);
 
+authRouter.post('/forgot-password',
+    validateBody(schemas.forgotPasswordSchema),
+    StudentsAuthController.sendForgotPasswordLink);
+
+authRouter.get('/confirm-forgot-password/:url',
+    StudentsAuthController.forgotPasswordConfirmation);
+
+authRouter.post('/update-password/:url',
+    validateBody(schemas.resetPasswordSchema),
+    StudentsAuthController.changePassword);
+
 authRouter.post('/google',
     passport.authorize('googleToken-student', {session: false}),
     StudentsAuthController.googleOAuth);

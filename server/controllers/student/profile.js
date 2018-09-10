@@ -312,7 +312,7 @@ module.exports = {
         }
         // Если студент не ответил, возвращаем соответствующее сообщение
         if (!answer) {
-            return res.status(204).json({"status": "Student didn't answer this question"});
+            return res.status(400).json({"status": "Student didn't answer this question"});
         }
         return res.status(200).json({answers: answer.answers});
     },
