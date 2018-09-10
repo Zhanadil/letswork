@@ -86,6 +86,33 @@ module.exports = {
         return res.status(200).json({status: "ok"});
     },
 
+    // Удалить вакансию по айди
+    removeVacancy: async (req, res, next) => {
+        var err, vacancy;
+        [err, vacancy] = await to(Vacancy.findById(req.params.id));
+        if (err) {
+            return res.status(500).json({error: err.message});
+        }
+        if (!vacancy) {
+            return res.status(400).json({error: "vacancy doesn't exist"});
+        }
+        if (vacancy.companyId !== req.account._id.toString()) {
+            return res.status(403).json({error: "forbidden, vacancy created by other company"});
+        }
+
+        [err] = await to(Vacancy.deleteOne({_id: req.params.id}));
+        if (err) {
+            return res.status(500).json({error: err.message});
+        }
+
+        [err] = await to(Application.deleteMany({vacancyId: req.params.id}));
+        if (err) {
+            return res.status(500).json({error: err.message});
+        }
+
+        return res.status(200).json({status: "ok"});
+    },
+
     // Компания отправляет заявку на вакансию студенту
     // req.body: {
     //      vacancyId: String
@@ -259,7 +286,7 @@ module.exports = {
                 }
                 sender = decoded.sub.type;
             });
-            var studentId = (sender == "company" ? req.body.studentId : req.account._id);
+            var studentId = (sender === "company" ? req.body.studentId : req.account._id);
             var vacancyId = req.body.vacancyId;
             // Проверяем айди вакансии на действительность
             await Vacancy.findById(vacancyId, (err, vacancy) => {
@@ -489,7 +516,6 @@ module.exports = {
 
     // Возвращает ВСЕ вакансии и если студент участвовал в них, то вместе со статусом.
     // При этом заранее пагинирует, например: вторая страница 10 запросов
-
     // Запрос содержит фильтры по мин зп(minSalary), макс зп(maxSalary),
     // область работы(vacancyField), и др.
     // Например: request.filter = {minSalary: 100000, type: ["full-time"]}
@@ -571,7 +597,7 @@ module.exports = {
             return res.status(500).json({error: err.message});
         }
         if (!vacancy) {
-            return res.status(204).json({error: "Vacancy doesn't exist"});
+            return res.status(400).json({error: "Vacancy doesn't exist"});
         }
 
         // Находим все заявки студента которые он не скрыл
@@ -602,7 +628,6 @@ module.exports = {
         }
         return res.status(200).json({vacancy});
     },
-
 
     // Возвращает все заявки связанные со студентом и всю информацию о вакансиях
     // и компаниях связанных с этими заявками
