@@ -29,7 +29,7 @@ authRouter.post('/signin',
     passport.authorize('local-company', {session: false}),
     CompanyAuthController.signIn);
 
-authRouter.post('/forgot-password',
+authRouter.get('/forgot-password',
     validateBody(schemas.forgotPasswordSchema),
     CompanyAuthController.sendForgotPasswordLink);
 
@@ -112,8 +112,6 @@ vacancyRouter.post('/reject',
 vacancyRouter.post('/discard',
     validateBody(schemas.companyVacancyApplicationSchema),
     VacancyController.companyDiscardApplication);
-
-vacancyRouter.get('/remove/:id', VacancyController.removeVacancy);
 
 vacancyRouter.get('/getVacancies', VacancyController.getCompanyVacancies);
 
