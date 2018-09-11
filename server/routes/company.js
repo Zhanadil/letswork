@@ -29,7 +29,7 @@ authRouter.post('/signin',
     passport.authorize('local-company', {session: false}),
     CompanyAuthController.signIn);
 
-authRouter.get('/forgot-password',
+authRouter.post('/forgot-password',
     validateBody(schemas.forgotPasswordSchema),
     CompanyAuthController.sendForgotPasswordLink);
 

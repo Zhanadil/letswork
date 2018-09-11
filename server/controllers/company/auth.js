@@ -196,7 +196,9 @@ module.exports = {
         company.credentials.forgotPasswordExpirationDate = null;
         await company.save();
 
-        return res.status(200).json({status: "ok"});
+        const token = await signToken(company);
+
+        return res.status(200).json({token});
     },
 
     // Sign up a user by google account

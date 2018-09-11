@@ -195,7 +195,9 @@ module.exports = {
         student.credentials.forgotPasswordExpirationDate = null;
         await student.save();
 
-        return res.status(200).json({status: "ok"});
+        const token = await signToken(company);
+
+        return res.status(200).json({token});
     },
 
     // Sign up a user by google account

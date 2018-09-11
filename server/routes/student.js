@@ -29,7 +29,7 @@ authRouter.post('/signin',
     passport.authorize('local-student', {session: false}),
     StudentsAuthController.signIn);
 
-authRouter.get('/forgot-password',
+authRouter.post('/forgot-password',
     validateBody(schemas.forgotPasswordSchema),
     StudentsAuthController.sendForgotPasswordLink);
 
