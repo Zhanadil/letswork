@@ -8,8 +8,16 @@ module.exports = {
         const { name, email, password } = req.value.body;
 
         // Check if email is already used
-        const foundCompany = await Company.findOne({ 'credentials.email': email });
+        const foundCompany = await Company.findOne({
+            '$or': [
+                { 'credentials.email': email },
+                { 'name': name },
+            ]
+        });
         if (foundCompany) {
+            if (foundCompany.name === name) {
+                return res.status(403).json({ error: "company name is already in use" });
+            }
             return res.status(403).json({ error: "Email is already in use" });
         }
 
