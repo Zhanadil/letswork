@@ -7,11 +7,11 @@ const Student = require('@models/student');
 const { Vacancy, Application } = require('@models/vacancy');
 const { JWT_SECRET } = require('@configuration');
 
-statusId = (status, sender) => {
-    if (status === "pending" && sender === "company") {
+statusId = (requester, status, sender) => {
+    if (status === "pending" && sender !== requester) {
         return 1;
     }
-    if (status === "pending" && sender === "student") {
+    if (status === "pending" && sender === requester) {
         return 2;
     }
     if (status === "accepted") {
@@ -462,13 +462,17 @@ module.exports = {
             applicationsFilter.status = "rejected";
         }
         // Находим все заявки студента, которые он не скрыл в отфильтрованном виде
-        [err, applications] = await to(Application.find(applicationsFilter));
+        [err, applications] = await to(
+            Application.find(applicationsFilter).lean()
+        );
         if (err) {
             return res.status(500).json({error: err.message});
         }
 
         // Выписываем айди отфильтрованных вакансий и айди студентов находящихся в заявке
         applications.forEach(v => {
+            v.status = statusId("company", v.status, v.sender);
+            v.sender = undefined;
             vacancyIds.push(v.vacancyId);
             if (studentIds.indexOf(v.studentId) === -1) {
                 studentIds.push(v.studentId);
@@ -567,7 +571,7 @@ module.exports = {
             applications.some(application => {
                 if (vacancy._id.toString() === application.vacancyId) {
                     vacancies[i].status =
-                        statusId(application.status, application.sender);
+                        statusId("student", application.status, application.sender);
                     return true;
                 }
                 return false;
@@ -622,7 +626,7 @@ module.exports = {
         // Проверяем если на вакансию есть заявка студента,
         // то добавляем статус заявки
         if (application) {
-            vacancy.status = statusId(application.status, application.sender);
+            vacancy.status = statusId("student", application.status, application.sender);
         } else {
             vacancy.status = 0;
         }
