@@ -26,12 +26,16 @@ module.exports = {
         });
     },
 
-    sendStudentRegistrationEmail: (temporaryStudent) => {
+    sendStudentRegistrationEmail: (student) => {
+        if (!student || student.credentials.confirmed) {
+            return;
+        }
+
         var mailOptions = {
             from: 'znurtoleuov@gmail.com',
-            to: temporaryStudent.credentials.email,
+            to: student.credentials.email,
             subject: 'Добро пожаловать на love2work',
-            text: `Спасибо, что выбрали наш сайт, чтобы подтвердить свой почтовый адрес пройдите по ссылке love2work.kz:3000/student/auth/verify/${temporaryStudent.url}`,
+            text: `Спасибо, что выбрали наш сайт, чтобы подтвердить свой почтовый адрес пройдите по ссылке love2work.kz:3000/student/auth/verify/${student.credentials.confirmationToken}`,
         };
 
         transporter.sendMail(mailOptions, function(error, info){
@@ -42,12 +46,16 @@ module.exports = {
         });
     },
 
-    sendCompanyRegistrationEmail: (temporaryCompany) => {
+    sendCompanyRegistrationEmail: (company) => {
+        if (!company || company.credentials.confirmed) {
+            return;
+        }
+
         var mailOptions = {
             from: 'znurtoleuov@gmail.com',
-            to: temporaryCompany.credentials.email,
+            to: company.credentials.email,
             subject: 'Добро пожаловать на love2work',
-            text: `Спасибо, что выбрали наш сайт, чтобы подтвердить свой почтовый адрес пройдите по ссылке love2work.kz:3000/company/auth/verify/${temporaryCompany.url}`,
+            text: `Спасибо, что выбрали наш сайт, чтобы подтвердить свой почтовый адрес пройдите по ссылке love2work.kz:3000/company/auth/verify/${company.credentials.confirmationToken}`,
         };
 
         transporter.sendMail(mailOptions, function(error, info){

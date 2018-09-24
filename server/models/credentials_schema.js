@@ -11,6 +11,11 @@ const credentialsSchema = mongoose.Schema({
         lowercase: true,
         unique: true,
     },
+    confirmed: {
+        type: Boolean,
+        default: false,
+    },
+    confirmationToken: String,
     password: String,
     googleId: String,
     forgotPasswordUrl: String,

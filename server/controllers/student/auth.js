@@ -2,7 +2,6 @@ const to = require('await-to-js').default;
 const nanoid = require('nanoid/async');
 
 const Student = require('@models/student');
-const TemporaryStudent = require('@models/temporary/student');
 const { signToken } = require('@controllers/helpers/token');
 const mailer = require('@controllers/mailer');
 const { hashPassword } = require('@controllers/helpers/auth');
@@ -25,72 +24,50 @@ module.exports = {
             return res.status(403).json({ error: "Email is already in use" });
         }
 
-        var foundTemporaryStudent;
-        // Если студент уже пытался зарегестрироваться, но не подтвердил почту,
-        // то повторно выслать ссылку подтверждения
-        [err, foundTemporaryStudent] = await to(
-            TemporaryStudent.findOne({ 'credentials.email': email })
-        )
-        if (err) {
-            return res.status(500).json({error: err.message});
-        }
-        if (foundTemporaryStudent) {
-            // Обновляем ссылку и дату истечения срока
-            foundTemporaryStudent.url = await nanoid();
-            foundTemporaryStudent.dateUpdated = Date.now();
-            await foundTemporaryStudent.save();
-            mailer.sendStudentRegistrationEmail(foundTemporaryStudent);
-
-            return res.status(200).json({ status: "ok" });
-        }
-
-        // Создаем временный аккаунт, который удаляется через 24 часа, если
-        // студент не пройдет по ссылке
-        var url = await nanoid();
-
         const hashedPassword = await hashPassword(password);
-
-        const newStudent = await new TemporaryStudent({
-            credentials: {
-                method: 'local',
-                email,
-                password: hashedPassword,
-            },
-            url,
-        });
-        await newStudent.save();
-        mailer.sendStudentRegistrationEmail(newStudent);
-
-        return res.status(200).json({ status: "ok" });
-    },
-
-    // Подтверждение аккаунта, если ссылка верная, то переносим данные
-    // с временного аккаунта на постоянный
-    verify: async (req, res, next) => {
-        // Проверяем что временный студент существует и сразу удаляем
-        var err, temporaryStudent;
-        [err, temporaryStudent] = await to(
-            TemporaryStudent.findOneAndRemove({url: req.params.url})
-        );
-        if (err) {
-            return res.status(500).json({error: err.message});
-        }
-        if (!temporaryStudent) {
-            return res.status(400).json({error: "student not found"});
-        }
+        var confirmationToken = await nanoid();
 
         // Создаем постоянный аккаунт и сохраняем его
         const newStudent = new Student({
             credentials: {
                 method: 'local',
-                email: temporaryStudent.credentials.email,
-                password: temporaryStudent.credentials.password,
+                email: email,
+                password: hashedPassword,
+                confirmed: false,
+                confirmationToken: confirmationToken,
             }
         });
         await newStudent.save();
 
+        mailer.sendStudentRegistrationEmail(newStudent);
+
         // Возвращаем токен
         const token = await signToken(newStudent);
+        return res.status(200).json({ token });
+    },
+
+    // Подтверждение аккаунта, если ссылка верная, то переносим данные
+    // с временного аккаунта на постоянный
+    verify: async (req, res, next) => {
+        // Проверяем что студент существует
+        var err, student;
+        [err, student] = await to(
+            Student.findOne({'credentials.confirmationToken': req.params.token})
+        );
+        if (err) {
+            return res.status(500).json({error: err.message});
+        }
+        if (!student) {
+            return res.status(400).json({error: "student not found"});
+        }
+
+        // Подтверждаем его почту
+        student.credentials.confirmed = true;
+        student.credentials.confirmationToken = undefined;
+
+        // Сохраняем и возвращаем токен
+        await student.save();
+        const token = await signToken(student);
         return res.status(200).json({ token });
     },
 

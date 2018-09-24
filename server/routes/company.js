@@ -22,7 +22,7 @@ authRouter.post('/signup',
     validateBody(schemas.companyRegSchema),
     CompanyAuthController.signUp);
 
-authRouter.get('/verify/:url', CompanyAuthController.verify);
+authRouter.get('/verify/:token', CompanyAuthController.verify);
 
 authRouter.post('/signin',
     validateBody(schemas.authSchema),

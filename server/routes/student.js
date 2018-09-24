@@ -22,7 +22,7 @@ authRouter.post('/signup',
     validateBody(schemas.studentRegSchema),
     StudentsAuthController.signUp);
 
-authRouter.get('/verify/:url', StudentsAuthController.verify);
+authRouter.get('/verify/:token', StudentsAuthController.verify);
 
 authRouter.post('/signin',
     validateBody(schemas.authSchema),
