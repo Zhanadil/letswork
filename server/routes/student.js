@@ -13,7 +13,6 @@ const { validateBody, schemas } = require('@helpers/routeHelpers');
 
 const StudentsAuthController = require('@controllers/student/auth');
 const StudentsProfileController = require('@controllers/student/profile');
-const StudentsVacancyController = require('@controllers/student/vacancy');
 const VacancyController = require('@controllers/vacancy');
 
 // ***********  All student authorization related requests  *****************
@@ -87,7 +86,7 @@ router.use('/private', privateRouter);
 vacancyRouter.use(passport.authorize('jwt-student', {session: false}));
 
 vacancyRouter.post('/apply',
-    validateBody(schemas.studentVacancyApplicationSchema),
+    validateBody(schemas.studentVacancyApplySchema),
     VacancyController.studentApplication);
 
 vacancyRouter.post('/cancel',

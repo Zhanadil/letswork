@@ -20,6 +20,10 @@ const newVacancySchema = joi.object().keys({
     vacancyField: joi.string().required(),
     vacancyName: joi.string().required(),
 });
+const studentVacancyApplySchema = joi.object().keys({
+    vacancyId: joi.string().required(),
+    coverLetter: joi.string().required(),
+});
 const studentVacancyApplicationSchema = joi.object().keys({
     vacancyId: joi.string().required(),
 });
@@ -81,6 +85,7 @@ module.exports = {
         studentRegSchema,
         companyRegSchema,
         newVacancySchema,
+        studentVacancyApplySchema,
         studentVacancyApplicationSchema,
         companyVacancyApplicationSchema,
         getVacancySchema,
