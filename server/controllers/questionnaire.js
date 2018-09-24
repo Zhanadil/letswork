@@ -11,10 +11,12 @@ module.exports = {
         var err, question;
 
         // Ищем вопрос в базе данных
-        [err, question] = to(Question.findOne({
-            setNumber: req.params.setNumber,
-            questionNumber: req.params.questionNumber,
-        }));
+        [err, question] = await to(
+            Question.findOne({
+                setNumber: req.params.setNumber,
+                questionNumber: req.params.questionNumber,
+            })
+        );
         if (err) {
             return res.status(500).json({error: err.message});
         }
@@ -34,9 +36,11 @@ module.exports = {
         var err, questions;
 
         // Ищем вопрос в базе данных
-        [err, questions] = await to(Question.find({
-            setNumber: req.params.setNumber,
-        }).sort({questionNumber: 1}));
+        [err, questions] = await to(
+            Question.find({
+                setNumber: req.params.setNumber,
+            }).sort({questionNumber: 1})
+        );
         if (err) {
             return res.status(500).json({error: err.message});
         }
@@ -52,7 +56,9 @@ module.exports = {
         var err, questions;
 
         // Ищем вопрос в базе данных
-        [err, questions] = await to(Question.find({}).sort({setNumber: 1, questionNumber: 1}));
+        [err, questions] = await to(
+            Question.find({}).sort({setNumber: 1, questionNumber: 1})
+        );
         if (err) {
             return res.status(500).json({error: err.message});
         }

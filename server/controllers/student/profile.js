@@ -256,10 +256,12 @@ module.exports = {
     updateQuestionnaireAnswer: async (req, res, next) => {
         var err, question, answer;
         // Находим вопрос в базе данных
-        [err, question] = await to(Question.findOne({
-            setNumber: req.params.setNumber,
-            questionNumber: req.params.questionNumber
-        }));
+        [err, question] = await to(
+            Question.findOne({
+                setNumber: req.params.setNumber,
+                questionNumber: req.params.questionNumber
+            })
+        );
         if (err) {
             return res.status(500).json({error: err.message});
         }
@@ -271,11 +273,13 @@ module.exports = {
             return res.status(409).json({error: `${question.questionType} type question can't accept multiple answers`});
         }
         // Находим уже существующий ответ
-        [err, answer] = await to(Answer.findOne({
-            studentId: req.account._id,
-            setNumber: req.params.setNumber,
-            questionNumber: req.params.questionNumber,
-        }));
+        [err, answer] = await to(
+            Answer.findOne({
+                studentId: req.account._id,
+                setNumber: req.params.setNumber,
+                questionNumber: req.params.questionNumber,
+            })
+        );
         if (err) {
             return res.status(500).json({error: err.message});
         }
@@ -302,11 +306,13 @@ module.exports = {
     getQuestionnaireAnswer: async (req, res, next) => {
         var err, answer;
         // Находим ответ
-        [err, answer] = await to(Answer.findOne({
-            studentId: req.params.studentId,
-            setNumber: req.params.setNumber,
-            questionNumber: req.params.questionNumber,
-        }));
+        [err, answer] = await to(
+            Answer.findOne({
+                studentId: req.params.studentId,
+                setNumber: req.params.setNumber,
+                questionNumber: req.params.questionNumber,
+            })
+        );
         if (err) {
             return res.status(500).json({error: err.message});
         }
@@ -323,10 +329,12 @@ module.exports = {
     getQuestionnaireSetAnswers: async (req, res, next) => {
         var err, answers;
         // Находим ответ
-        [err, answers] = await to(Answer.find({
-            studentId: req.params.studentId,
-            setNumber: req.params.setNumber,
-        }).sort({questionNumber: 1}));
+        [err, answers] = await to(
+            Answer.find({
+                studentId: req.params.studentId,
+                setNumber: req.params.setNumber,
+            }).sort({questionNumber: 1})
+        );
         if (err) {
             return res.status(500).json({error: err.message});
         }
@@ -339,9 +347,11 @@ module.exports = {
     getAllQuestionnaireAnswers: async (req, res, next) => {
         var err, answers;
         // Находим ответ
-        [err, answers] = await to(Answer.find({
-            studentId: req.params.studentId,
-        }).sort({setNumber: 1, questionNumber: 1}));
+        [err, answers] = await to(
+                Answer.find({
+                studentId: req.params.studentId,
+            }).sort({setNumber: 1, questionNumber: 1})
+        );
         if (err) {
             return res.status(500).json({error: err.message});
         }
