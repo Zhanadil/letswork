@@ -251,7 +251,7 @@ module.exports = {
     //
     // POST /student/questionnaire/answer/:setNumber/:questionNumber
     // req.body: {
-    //      studentId: String
+    //      answers: [String]
     // }
     updateQuestionnaireAnswer: async (req, res, next) => {
         var err, question, answer;
