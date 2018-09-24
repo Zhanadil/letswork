@@ -190,40 +190,49 @@ module.exports = {
 
     // Студент отправляет заявку на вакансию
     // req.body: {
-    //      vacancyId: String
+    //      vacancyId: String,
+    //      coverLetter: String,
     // }
     studentApplication: async (req, res, next) => {
         // Айди компании которая создала вакансию, нужно для создания заявки
-        var companyId;
+        var err, vacancy;
         // Проверяем айди вакансии на действительность
-        await Vacancy.findById(req.body.vacancyId, (err, vacancy) => {
-            if (err) {
-                return res.status(500).json({error: err.message});
-            }
-            if (!vacancy) {
-                return res.status(400).json({error: "vacancy not found"});
-            }
-            companyId = vacancy.companyId;
-        });
+        [err, vacancy] = await to(
+            Vacancy.findById(req.body.vacancyId)
+        );
+        if (err) {
+            return res.status(500).json({error: err.message});
+        }
+        if (!vacancy) {
+            return res.status(400).json({error: "vacancy not found"});
+        }
+        var companyId = vacancy.companyId;
 
-        // Find the student.
-        var student = await Student.findById(req.account._id, (err) => {
-            if (err) {
-                return res.status(500).json({error: err.message});
-            }
-        });
+        // Проверяем айди студента
+        var student;
+        [err, student] = await to(
+            Student.findById(req.account._id)
+        );
+        if (err) {
+            return res.status(500).json({error: err.message});
+        }
         if (!student) {
             return res.status(400).json({error: "student not found"});
         }
 
-        var application = await Application.findOne(
-                {studentId: req.account._id, vacancyId: req.body.vacancyId},
-                (err) => {
-                    if (err) {
-                        return res.status(500).json({error: err.message});
-                    }
+        // Находим заявку
+        var application;
+        [err, application] = await to(
+            Application.findOne(
+                {
+                    studentId: req.account._id,
+                    vacancyId: req.body.vacancyId
                 }
-            );
+            )
+        );
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
 
         // Если заявка уже существует
         if (application) {
@@ -236,6 +245,7 @@ module.exports = {
             }
             application.status = 'pending';
             application.sender = 'student';
+            application.coverLetter = req.body.coverLetter;
             application.studentDiscarded = false;
             application.companyDiscarded = false;
 
@@ -244,26 +254,28 @@ module.exports = {
             return res.status(200).json({status: "ok"});
         }
 
+        // Если заявка не существует, то создаем новую
         application = await new Application({
             vacancyId: req.body.vacancyId,
             companyId: companyId,
             studentId: req.account._id,
             status: "pending",
             sender: "student",
+            coverLetter: req.body.coverLetter,
             studentDiscarded: false,
             companyDiscarded: false,
         });
         await application.save();
 
-        // Add vacancy to student's vacancy list.
+        // Добавляем вакансию в список вакансий связанных со студентом
         student.vacancies.push(req.body.vacancyId);
         await student.save();
 
-        return res.status(200).json({status: "ok"});
+        return res.status(200).json({ status: "ok" });
     },
 
     // Изменить статус вакансии, requirements для каждого случая брать из statusRequirements.
-    // Чтобы изменить статус, для этого нынешний статус должен быть из массива requirements.status
+    // Для того чтобы изменить статус, нынешний статус должен быть из массива requirements.status
     // И отправитель должен быть requirements.sender
     // Пример использования:
     //

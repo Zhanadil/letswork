@@ -13,7 +13,6 @@ const { validateBody, schemas } = require('@helpers/routeHelpers');
 
 const CompanyAuthController = require('@controllers/company/auth');
 const CompanyProfileController = require('@controllers/company/profile');
-const CompanyVacancyController = require('@controllers/company/vacancy');
 const VacancyController = require('@controllers/vacancy');
 
 // **************  All company authorization related requests ****************
