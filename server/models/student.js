@@ -10,6 +10,11 @@ const credentialsSchema = require('@models/credentials_schema');
 // are stored there.
 const studentSchema = mongoose.Schema({
     credentials: credentialsSchema,
+    userType: {
+        type: String,
+        enum: ["user", "admin"],
+        default: "user",
+    },
     firstName: String,
     lastName: String,
     phone: String,
