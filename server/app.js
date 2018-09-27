@@ -11,6 +11,7 @@ const JWT = require('jsonwebtoken');
 const { JWT_SECRET } = require('@configuration');
 
 const logger = require('@root/logger');
+const adminRouter = require('@routes/admin');
 const studentRouter = require('@routes/student');
 const companyRouter = require('@routes/company');
 const generalRouter = require('@routes/general');
@@ -64,6 +65,7 @@ app.use((req, res, next) => {
     }
 });
 
+app.use('/admin', adminRouter);
 app.use('/student', studentRouter);
 app.use('/company', companyRouter);
 app.use('/', generalRouter);

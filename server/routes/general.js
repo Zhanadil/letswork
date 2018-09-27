@@ -58,7 +58,7 @@ studentRouter.get('/image-avatar/*', function(req, res, next) {
 
 router.use('/student', studentRouter);
 
-// ***************************  Students  *****************************
+// ***************************  Questionnaire  *****************************
 
 questionnaireRouter.get('/question/:setNumber/:questionNumber',
     QuestionnaireController.getQuestion);
