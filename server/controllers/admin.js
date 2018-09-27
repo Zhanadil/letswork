@@ -8,8 +8,8 @@ module.exports = {
     //
     // /POST /admin/questionnaire/question/update
     // req.body: {
-    //      setNumber: String,
-    //      questionNumber: String,
+    //      setNumber: Number,
+    //      questionNumber: Number,
     //      questionType: enum: ['openended', 'multichoice', 'singlechoice', 'dropdown'],
     //      questionText: String,
     //      answers: [String],
@@ -55,8 +55,8 @@ module.exports = {
     //
     // /POST /admin/questionnaire/question/delete
     // req.body: {
-    //      setNumber: String,
-    //      questionNumber: String,
+    //      setNumber: Number,
+    //      questionNumber: Number,
     // }
     deleteQuestion: async (req, res, next) => {
         var err, questionSet;
@@ -96,5 +96,108 @@ module.exports = {
         }
 
         return res.status(200).json({ status: "ok" });
-    }
+    },
+
+    // Создать новый сет вопросов, принимает номер сета и название
+    //
+    // /POST /admin/questionnaire/set/create
+    // req.body: {
+    //      setNumber: Number,
+    //      setName: String
+    // }
+    createQuestionSet: async (req, res, next) => {
+        var err, questionSet;
+
+        // Находим сет по номеру
+        [err, questionSet] = await to(
+            Questionnaire.QuestionSet.findOne({
+                setNumber: req.body.setNumber
+            })
+        )
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+
+        // Если он существует, то возвращаем ошибку
+        if (questionSet) {
+            return res.status(400).json({ error: "question set already exists" });
+        }
+
+        // Создаем новый сет
+        questionSet = await new Questionnaire.QuestionSet({
+            setNumber: req.body.setNumber,
+            setName: req.body.setName,
+        });
+        await questionSet.save();
+
+        return res.status(200).json({ status: "ok" });
+    },
+
+    // Обновить название сета вопросов, принимает номер сета и название
+    //
+    // /POST /admin/questionnaire/set/update
+    // req.body: {
+    //      setNumber: Number,
+    //      setName: String
+    // }
+    updateQuestionSet: async (req, res, next) => {
+        var err, questionSet;
+
+        // Находим сет по номеру
+        [err, questionSet] = await to(
+            Questionnaire.QuestionSet.findOne({
+                setNumber: req.body.setNumber
+            })
+        )
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+
+        // Если он не существует, то возвращаем ошибку
+        if (!questionSet) {
+            return res.status(400).json({ error: "question set not found" });
+        }
+
+        // Изменяем название сета
+        questionSet.setName = req.body.setName;
+        await questionSet.save();
+
+        return res.status(200).json({ status: "ok" });
+    },
+
+
+    // Удалить сет вопросов, принимает номер сета
+    //
+    // /POST /admin/questionnaire/set/delete
+    // req.body: {
+    //      setNumber: Number
+    // }
+    deleteQuestionSet: async (req, res, next) => {
+        var err, questionSet;
+
+        // Находим сет по номеру
+        [err, questionSet] = await to(
+            Questionnaire.QuestionSet.findOne({
+                setNumber: req.body.setNumber
+            })
+        )
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+
+        // Если он не существует, то возвращаем ошибку
+        if (!questionSet) {
+            return res.status(400).json({ error: "question set not found" });
+        }
+
+        // Удаляем сет
+        [err] = await to(
+            questionSet.remove()
+        );
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+
+        return res.status(200).json({ status: "ok" });
+    },
 };

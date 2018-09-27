@@ -50,6 +50,14 @@ const getVacancyById = joi.object().keys({
         companyName: joi.number(),
     }),
 });
+const getAllVacancies = getVacancyById.keys({
+    filter: joi.object().keys({
+        minSalary: joi.number(),
+        maxSalary: joi.number(),
+        type: joi.array().items(joi.string()),
+        vacancyField: joi.string(),
+    }),
+});
 const deleteQuestionSchema = joi.object().keys({
     setNumber: joi.number().min(0).required(),
     questionNumber: joi.number().min(0).required(),
@@ -61,13 +69,16 @@ const updateQuestionSchema = joi.object().keys({
     questionText: joi.string().required(),
     answers: joi.array().items(joi.string()).required(),
 });
-const getAllVacancies = getVacancyById.keys({
-    filter: joi.object().keys({
-        minSalary: joi.number(),
-        maxSalary: joi.number(),
-        type: joi.array().items(joi.string()),
-        vacancyField: joi.string(),
-    }),
+const createQuestionSetSchema = joi.object().keys({
+    setNumber: joi.number().min(0).required(),
+    setName: joi.string().required(),
+});
+const deleteQuestionSetSchema = joi.object().keys({
+    setNumber: joi.number().min(0).required(),
+});
+const updateQuestionSetSchema = joi.object().keys({
+    setNumber: joi.number().min(0).required(),
+    setName: joi.string().required(),
 });
 
 module.exports = {
@@ -105,5 +116,8 @@ module.exports = {
         getAllVacancies,
         updateQuestionSchema,
         deleteQuestionSchema,
+        createQuestionSetSchema,
+        deleteQuestionSetSchema,
+        updateQuestionSetSchema,
     },
 };
