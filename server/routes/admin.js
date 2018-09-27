@@ -22,6 +22,18 @@ questionnaireRouter.post('/question/delete',
     validateBody(schemas.deleteQuestionSchema),
     AdminController.deleteQuestion);
 
+questionnaireRouter.post('/set/create',
+    validateBody(schemas.createQuestionSetSchema),
+    AdminController.createQuestionSet);
+
+questionnaireRouter.post('/set/delete',
+    validateBody(schemas.deleteQuestionSetSchema),
+    AdminController.deleteQuestionSet);
+
+questionnaireRouter.post('/set/update',
+    validateBody(schemas.updateQuestionSetSchema),
+    AdminController.updateQuestionSet);
+
 router.use('/questionnaire', questionnaireRouter);
 
 module.exports = router;
