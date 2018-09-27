@@ -27,6 +27,14 @@ module.exports = {
 
     signIn: async (req, res, next) => {
         const token = await signToken(req.account);
+
+        if (req.account.userType === "admin") {
+            return res.status(200).json({
+                token,
+                isAdmin: true,
+            })
+        }
+
         return res.status(200).json({ token });
     },
 
