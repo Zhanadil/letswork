@@ -6,6 +6,7 @@ const questionnaireRouter = express.Router();
 
 const passport = require('passport');
 const passportConfig = require('@root/passport');
+const { validateBody, schemas } = require('@helpers/routeHelpers');
 
 const AdminController = require('@controllers/admin.js');
 
@@ -13,9 +14,13 @@ const AdminController = require('@controllers/admin.js');
 
 questionnaireRouter.use(passport.authorize('jwt-admin', {session: false}));
 
-questionnaireRouter.post('/question/update', AdminController.updateQuestion);
+questionnaireRouter.post('/question/update',
+    validateBody(schemas.updateQuestionSchema),
+    AdminController.updateQuestion);
 
-questionnaireRouter.post('/question/delete', AdminController.deleteQuestion);
+questionnaireRouter.post('/question/delete',
+    validateBody(schemas.deleteQuestionSchema),
+    AdminController.deleteQuestion);
 
 router.use('/questionnaire', questionnaireRouter);
 

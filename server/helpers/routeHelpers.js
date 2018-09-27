@@ -50,6 +50,17 @@ const getVacancyById = joi.object().keys({
         companyName: joi.number(),
     }),
 });
+const deleteQuestionSchema = joi.object().keys({
+    setNumber: joi.number().min(0).required(),
+    questionNumber: joi.number().min(0).required(),
+});
+const updateQuestionSchema = joi.object().keys({
+    questionType: joi.string().valid('openended', 'multichoice', 'singlechoice', 'dropdown').required(),
+    setNumber: joi.number().min(0).required(),
+    questionNumber: joi.number().min(0).required(),
+    questionText: joi.string().required(),
+    answers: joi.array().items(joi.string()).required(),
+});
 const getAllVacancies = getVacancyById.keys({
     filter: joi.object().keys({
         minSalary: joi.number(),
@@ -92,5 +103,7 @@ module.exports = {
         studentAnswerSchema,
         getVacancyById,
         getAllVacancies,
+        updateQuestionSchema,
+        deleteQuestionSchema,
     },
 };
