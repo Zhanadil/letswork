@@ -60,14 +60,11 @@ router.use('/student', studentRouter);
 
 // ***************************  Questionnaire  *****************************
 
-questionnaireRouter.get('/question/:setNumber/:questionNumber',
-    QuestionnaireController.getQuestion);
+questionnaireRouter.get('/question-set/:setNumber',
+    QuestionnaireController.getQuestionSet);
 
-questionnaireRouter.get('/set-questions/:setNumber',
-    QuestionnaireController.getSetQuestions);
-
-questionnaireRouter.get('/all-questions',
-    QuestionnaireController.getAllQuestions);
+questionnaireRouter.get('/all-question-sets',
+    QuestionnaireController.getAllQuestionSets);
 
 questionnaireRouter.get('/answer/:studentId/:setNumber/:questionNumber',
     StudentProfileController.getQuestionnaireAnswer);

@@ -1,6 +1,6 @@
 const to = require('await-to-js').default;
 
-const { Question, Answer } = require('@models/questionnaire');
+const Questionnaire = require('@models/questionnaire');
 
 // Все функции администратора
 module.exports = {
@@ -15,31 +15,38 @@ module.exports = {
     //      answers: [String],
     // }
     updateQuestion: async (req, res, next) => {
-        var err, question;
+        var err, questionSet;
 
-        // Ищем вопрос в базе данных
-        [err, question] = await to(
-            Question.findOne({
+        // Ищем сет вопросов в базе данных
+        [err, questionSet] = await to(
+            Questionnaire.QuestionSet.findOne({
                 setNumber: req.body.setNumber,
-                questionNumber: req.body.questionNumber,
             })
         );
         if (err) {
             return res.status(500).json({ error: err.message });
         }
 
-        // Если вопрос есть в базе
-        if (question) {
-            question.set(req.body);
-            await question.save();
-            return res.status(200).json({ status: "ok" });
+        // Если сета нет в базе, то вернуть ошибку
+        if (!questionSet) {
+            return res.status(400).json({ error: "question set not found" });
         }
-        // Создаем новый вопрос
-        question = await new Question(req.body);
-        if (err) {
-            return res.status(500).json({ error: err.message });
+
+        // Обнуляем номер сета, чтобы он не был прописан в документе вопроса.
+        req.body.setNumber = undefined;
+
+        // Находим индекс вопроса, если вопроса нет, то вставляем в конец
+        var questionIndex = questionSet.questions.findIndex(
+            Questionnaire.findQuestion(req.body.questionNumber)
+        );
+        if (questionIndex === -1) {
+            questionIndex = questionSet.questions.length;
         }
-        await question.save();
+        questionSet.questions[questionIndex] = req.body;
+
+        // Сортируем вопросы по номерам
+        questionSet.questions.sort(Questionnaire.questionCompare());
+        await questionSet.save();
 
         return res.status(200).json({ status: "ok" });
     },
@@ -52,27 +59,37 @@ module.exports = {
     //      questionNumber: String,
     // }
     deleteQuestion: async (req, res, next) => {
-        var err, question;
+        var err, questionSet;
 
         // Ищем вопрос в базе данных
-        [err, question] = await to(
-            Question.findOne({
+        [err, questionSet] = await to(
+            Questionnaire.QuestionSet.findOne({
                 setNumber: req.body.setNumber,
-                questionNumber: req.body.questionNumber,
             })
         );
         if (err) {
             return res.status(500).json({ error: err.message });
         }
 
-        // Если вопроса нет в базе, вернуть ошибку
-        if (!question) {
-            return res.status(400).json({ error: "question not found" });
+        // Если сета вопросов нет в базе, вернуть ошибку
+        if (!questionSet) {
+            return res.status(400).json({ error: "question set not found" });
+        }
+
+        // Находим индекс вопроса
+        var questionIndex = questionSet.questions.findIndex(
+            Questionnaire.findQuestion(req.body.questionNumber)
+        );
+        if (questionIndex === -1) {
+            return res.status(400).json({ error: "question not found"});
         }
 
         // Удаляем вопрос
+        questionSet.questions.splice(questionIndex, 1);
+
+        // Сохраняем документ
         [err] = await to(
-            question.remove()
+            questionSet.save()
         );
         if (err) {
             return res.status(500).json({ error: err.message });
