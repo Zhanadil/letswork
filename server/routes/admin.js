@@ -14,25 +14,33 @@ const AdminController = require('@controllers/admin.js');
 
 questionnaireRouter.use(passport.authorize('jwt-admin', {session: false}));
 
-questionnaireRouter.post('/question/update',
-    validateBody(schemas.updateQuestionSchema),
-    AdminController.updateQuestion);
+questionnaireRouter.route('/question')
+    .put(
+        validateBody(schemas.updateQuestionSchema),
+        AdminController.updateQuestion
+    )
+    .delete(
+        validateBody(schemas.deleteQuestionSchema),
+        AdminController.deleteQuestion
+    );
 
-questionnaireRouter.post('/question/delete',
-    validateBody(schemas.deleteQuestionSchema),
-    AdminController.deleteQuestion);
+questionnaireRouter.put('/question-belbin',
+    validateBody(schemas.updateBelbinQuestionSchema),
+    AdminController.updateBelbinQuestion);
 
-questionnaireRouter.post('/set/create',
-    validateBody(schemas.createQuestionSetSchema),
-    AdminController.createQuestionSet);
-
-questionnaireRouter.post('/set/delete',
-    validateBody(schemas.deleteQuestionSetSchema),
-    AdminController.deleteQuestionSet);
-
-questionnaireRouter.post('/set/update',
-    validateBody(schemas.updateQuestionSetSchema),
-    AdminController.updateQuestionSet);
+questionnaireRouter.route('/set')
+    .put(
+        validateBody(schemas.createQuestionSetSchema),
+        AdminController.createQuestionSet
+    )
+    .post(
+        validateBody(schemas.updateQuestionSetSchema),
+        AdminController.updateQuestionSet
+    )
+    .delete(
+        validateBody(schemas.deleteQuestionSetSchema),
+        AdminController.deleteQuestionSet
+    );
 
 router.use('/questionnaire', questionnaireRouter);
 

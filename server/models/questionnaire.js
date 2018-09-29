@@ -21,7 +21,7 @@ const questionSetSchema = mongoose.Schema({
         questionText: String,
         questionType: {
             type: String,
-            enum: ['openended', 'multichoice', 'singlechoice', 'dropdown'],
+            enum: ['openended', 'multichoice', 'singlechoice', 'dropdown', 'belbin'],
         },
         answers: [String],
     }],
@@ -34,6 +34,10 @@ const questionSetSchema = mongoose.Schema({
 const answerSchema = mongoose.Schema({
     studentId: String,
     setNumber: Number,
+    setName: {
+        type: String,
+        default: "Тест"
+    },
     questionNumber: Number,
     answers: [String],
 });
