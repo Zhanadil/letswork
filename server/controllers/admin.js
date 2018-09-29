@@ -10,7 +10,7 @@ module.exports = {
     // req.body: {
     //      setNumber: Number,
     //      questionNumber: Number,
-    //      questionType: enum: ['openended', 'multichoice', 'singlechoice', 'dropdown'],
+    //      questionType: enum: ['openended', 'multichoice', 'singlechoice', 'dropdown', 'belbin'],
     //      questionText: String,
     //      answers: [String],
     // }
@@ -50,6 +50,58 @@ module.exports = {
 
         return res.status(200).json({ status: "ok" });
     },
+
+    // Обновить(создать если не существует) раздел теста Белбина по номеру сета и номеру вопроса
+    //
+    // /POST /admin/questionnaire/question/update-belbin
+    // req.body: {
+    //      setNumber: Number,
+    //      questionNumber: Number,
+    //      questions: [String],
+    // }
+    updateBelbinQuestion: async (req, res, next) => {
+        var err, questionSet;
+
+        // Ищем сет вопросов в базе данных
+        [err, questionSet] = await to(
+            Questionnaire.QuestionSet.findOne({
+                setNumber: req.body.setNumber,
+            })
+        );
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+
+        // Если сета нет в базе, то вернуть ошибку
+        if (!questionSet) {
+            return res.status(400).json({ error: "question set not found" });
+        }
+
+        // Находим индекс вопроса, если вопроса нет, то вставляем в конец
+        var questionIndex = questionSet.questions.findIndex(
+            Questionnaire.findQuestion(req.body.questionNumber)
+        );
+        if (questionIndex === -1) {
+            questionIndex = questionSet.questions.length;
+        }
+
+        var questionText = req.body.questions.join(String.fromCharCode(28));
+        
+        // Записываем вопрос
+        questionSet.questions[questionIndex] = {
+            questionNumber: req.body.questionNumber,
+            questionText,
+            questionType: 'belbin',
+            answers: [],
+        };
+
+        // Сортируем вопросы по номерам
+        questionSet.questions.sort(Questionnaire.questionCompare());
+        await questionSet.save();
+
+        return res.status(200).json({ status: "ok" });
+    },
+
 
     // Удалить вопрос по номеру сета и номеру вопроса
     //

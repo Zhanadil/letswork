@@ -20,6 +20,11 @@ const studentSchema = mongoose.Schema({
     phone: String,
     description: String,
     vacancies: [String],
+    belbinResults: [{
+        categoryName: String,
+        pointsNumber: Number,
+        pointsPercentage: Number,
+    }]
 });
 
 const student = mongoose.model('student', studentSchema);
