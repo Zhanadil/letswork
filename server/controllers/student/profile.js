@@ -8,14 +8,9 @@ const logger = require('@root/logger');
 // Вспомогательная функция, цель которой убрать credentials которая содержит
 // пароль и вытащить оттуда email
 unnestStudent = function(student) {
-    var result = {};
-    result.id = student.id;
+    var result = student.toObject();
+    result.credentials = undefined;
     result.email = student.credentials.email;
-    result.firstName = student.firstName;
-    result.lastName = student.lastName;
-    result.phone = student.phone;
-    result.description = student.description;
-    result.vacancies = student.vacancies;
     return result;
 }
 

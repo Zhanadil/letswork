@@ -3,12 +3,9 @@ const path = require('path');
 const Company = require('@models/company');
 
 unnestCompany = function(company) {
-    var result = {};
-    result.id = company.id;
+    var result = company.toObject();
     result.email = company.credentials.email;
-    result.name = company.name;
-    result.phone = company.phone;
-    result.description = company.description;
+    result.credentials = undefined;
     return result;
 }
 
