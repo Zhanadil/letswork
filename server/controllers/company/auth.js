@@ -1,7 +1,7 @@
 const Company = require('@models/company');
 const { signToken } = require('@controllers/helpers/token');
 
-// Company authorization methods controller 
+// Company authorization methods controller
 module.exports = {
     // Sign Up a user by email
     signUp: async (req, res, next) => {

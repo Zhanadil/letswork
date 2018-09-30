@@ -18,28 +18,29 @@ const generalRouter = require('@routes/general');
 const privateRouter = require('@routes/private');
 
 mongoose.Promise = global.Promise;
-mongoose.connect(config.DBHost, { useNewUrlParser: true }, function(err, db){
-    if(err){
-        logger.emerg(`mongodb error: ${err.message}`);
-    } else {
-        logger.info('mongodb successfully started');
+var connectionOptions = {
+    auth: {
+        authSource: "admin"
+    },
+    useNewUrlParser: true
+};
+// if (config.util.getEnv('NODE_ENV') !== 'prod') {
+//     connectionOptions.auth = undefined;
+// }
+mongoose.connect(
+    config.DBHost,
+    connectionOptions,
+    function(err, db){
+        if(err){
+            console.log(`${err.message}`);
+            //logger.emerg(`mongodb error: ${err.message}`);
+        } else {
+            logger.info('mongodb successfully started');
+        }
     }
-})
+)
 
 const app = express();
-
-// In development, print dev logs to command line and combined logs to access_dev
-if(config.util.getEnv('NODE_ENV') === 'dev') {
-    //app.use(morgan('dev'));
-    /*app.use(morgan('combined', {
-        stream: fs.createWriteStream(path.join(__dirname, '../logs/access_dev.log'), {flags: 'a'})
-    }));*/
-} else if (config.util.getEnv('NODE_ENV') === 'prod') {
-    // In production, print only to file
-    /*app.use(morgan('combined', {
-        stream: fs.createWriteStream(path.join(__dirname, '../logs/access.log'), {flags: 'a'})
-    }));*/
-}
 
 app.use(body_parser.json());
 app.use(fileUpload());
