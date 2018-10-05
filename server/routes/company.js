@@ -9,26 +9,26 @@ const vacancyRouter = express.Router();
 
 const passport = require('passport');
 const passportConfig = require('@root/passport');
-const { validateBody, schemas } = require('@helpers/routeHelpers');
+const { validateBody, schemas } = require('@routes/helpers');
 
-const CompanyAuthController = require('@controllers/company/auth');
-const CompanyProfileController = require('@controllers/company/profile');
+const AuthController = require('@controllers/auth');
+const ProfileController = require('@controllers/profile');
 const VacancyController = require('@controllers/vacancy');
 
 // **************  All company authorization related requests ****************
 
 authRouter.post('/signup',
     validateBody(schemas.companyRegSchema),
-    CompanyAuthController.signUp);
+    AuthController.companySignUp);
 
 authRouter.post('/signin',
     validateBody(schemas.authSchema),
     passport.authorize('local-company', {session: false}),
-    CompanyAuthController.signIn);
+    AuthController.companySignIn);
 
 authRouter.post('/google',
     passport.authorize('googleToken-company', {session: false}),
-    CompanyAuthController.googleOAuth);
+    AuthController.companyGoogleOAuth);
 
 router.use('/auth', authRouter);
 
@@ -38,36 +38,36 @@ privateRouter.use(passport.authorize('jwt-company', {session: false}));
 
 // Update company name and get company name by id.
 privateRouter.route('/name')
-    .post(CompanyProfileController.updateName)
-    .get(CompanyProfileController.getName);
+    .post(ProfileController.companyUpdateName)
+    .get(ProfileController.companyGetName);
 
 // .. so on ...
 privateRouter.route('/phone')
-    .post(CompanyProfileController.updatePhone)
-    .get(CompanyProfileController.getPhone);
+    .post(ProfileController.companyUpdatePhone)
+    .get(ProfileController.companyGetPhone);
 
 privateRouter.route('/description')
-    .post(CompanyProfileController.updateDescription)
-    .get(CompanyProfileController.getDescription);
+    .post(ProfileController.companyUpdateDescription)
+    .get(ProfileController.companyGetDescription);
 
 // get full profile information.
-privateRouter.get('/profile', CompanyProfileController.getFullProfile);
+privateRouter.get('/profile', ProfileController.companyGetFullProfile);
 
 // Get profile information based on request:
 // Input example:
 //      {"id": true, "email": true}
 // Output:
 //      {"id": "... company id ...", "email": "johndoe@hotmail.com"}
-privateRouter.post('/profile', CompanyProfileController.getProfile);
+privateRouter.post('/profile', ProfileController.companyGetProfile);
 
 // Update profile information
 // Input example:
 //      {"email": "some_email@gmail.com", "firstName": "John"}
-privateRouter.post('/update-profile', CompanyProfileController.updateProfile);
+privateRouter.post('/update-profile', ProfileController.companyUpdateProfile);
 
 // Puts avatar image to default directory(it's inside config folder, name=RESOURCES_DIRECTORY)
 privateRouter.post('/image-avatar',
-    CompanyProfileController.updateImage(path.join(config.RESOURCES_DIRECTORY, 'avatar/company')));
+    ProfileController.companyUpdateImage(path.join(config.RESOURCES_DIRECTORY, 'avatar/company')));
 
 router.use('/private', privateRouter);
 
