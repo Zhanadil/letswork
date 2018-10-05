@@ -7,25 +7,22 @@ const studentRouter = express.Router();
 const vacancyRouter = express.Router();
 const questionnaireRouter = express.Router();
 
-const QuestionnaireController = require('@controllers/questionnaire.js');
-const GeneralCompanyController = require('@controllers/general/company');
-const GeneralStudentController = require('@controllers/general/student');
-const GeneralVacancyController = require('@controllers/general/vacancy');
-const StudentProfileController = require('@controllers/student/profile');
+const Controller = require('@controllers/general');
+const ProfileController = require('@controllers/profile');
 
 // ***************************  Vacancies  *****************************
 
-vacancyRouter.post('/ids/:page/:limit', GeneralVacancyController.getVacancyIds);
+vacancyRouter.post('/ids/:page/:limit', Controller.getVacancyIds);
 
-vacancyRouter.post('/:page/:limit', GeneralVacancyController.getVacancies);
+vacancyRouter.post('/:page/:limit', Controller.getVacancies);
 
-vacancyRouter.post('/:id', GeneralVacancyController.getVacancyById);
+vacancyRouter.post('/:id', Controller.getVacancyById);
 
 router.use('/vacancy', vacancyRouter);
 
 // ***************************  Companies  *****************************
 
-companyRouter.post('/:id', GeneralCompanyController.getCompanyById);
+companyRouter.post('/:id', Controller.getCompanyById);
 
 // Gets avatar image from default directory.
 companyRouter.use('/image-avatar',
@@ -41,11 +38,11 @@ router.use('/company', companyRouter);
 
 // ***************************  Students  *****************************
 
-studentRouter.post('/ids/:page/:limit', GeneralStudentController.getStudentIds);
+studentRouter.post('/ids/:page/:limit', Controller.getStudentIds);
 
-studentRouter.post('/:page/:limit', GeneralStudentController.getStudents);
+studentRouter.post('/:page/:limit', Controller.getStudents);
 
-studentRouter.post('/:id', GeneralStudentController.getStudentById);
+studentRouter.post('/:id', Controller.getStudentById);
 
 // Gets avatar image from default directory.
 studentRouter.use('/image-avatar',
@@ -61,19 +58,19 @@ router.use('/student', studentRouter);
 // ***************************  Questionnaire  *****************************
 
 questionnaireRouter.get('/question-set/:setNumber',
-    QuestionnaireController.getQuestionSet);
+    Controller.getQuestionSet);
 
 questionnaireRouter.get('/all-question-sets',
-    QuestionnaireController.getAllQuestionSets);
+    Controller.getAllQuestionSets);
 
 questionnaireRouter.get('/answer/:studentId/:setNumber/:questionNumber',
-    StudentProfileController.getQuestionnaireAnswer);
+    ProfileController.studentGetQuestionnaireAnswer);
 
 questionnaireRouter.get('/set-answers/:studentId/:setNumber',
-    StudentProfileController.getQuestionnaireSetAnswers);
+    ProfileController.studentGetQuestionnaireSetAnswers);
 
 questionnaireRouter.get('/all-answers/:studentId',
-    StudentProfileController.getAllQuestionnaireAnswers);
+    ProfileController.studentGetAllQuestionnaireAnswers);
 
 router.use('/questionnaire', questionnaireRouter);
 

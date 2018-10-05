@@ -6,7 +6,7 @@ const questionnaireRouter = express.Router();
 
 const passport = require('passport');
 const passportConfig = require('@root/passport');
-const { validateBody, schemas } = require('@helpers/routeHelpers');
+const { validateBody, schemas } = require('@routes/helpers');
 
 const AdminController = require('@controllers/admin.js');
 

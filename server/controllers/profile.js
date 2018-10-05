@@ -1,9 +1,17 @@
 const fs = require('fs');
 const path = require('path');
-const to = require('await-to-js').default;
+const Company = require('@models/company');
 const Student = require('@models/student');
 const Questionnaire = require('@models/questionnaire');
 const logger = require('@root/logger');
+
+unnestCompany = function(company) {
+    var result = company.toObject();
+    result.email = company.credentials.email;
+    result.credentials = undefined;
+    return result;
+}
+
 
 // Вспомогательная функция, цель которой убрать credentials которая содержит
 // пароль и вытащить оттуда email
@@ -24,6 +32,7 @@ const belbinTestCalculations = [
     [5, 2, 6, 0, 7, 4, 1, 3],
     [4, 6, 0, 5, 3, 1, 7, 2]
 ];
+
 const belbinCategories = [
     "Исполнитель",
     "Председатель",
@@ -105,10 +114,190 @@ updateBelbin = async function(studentId, cb) {
     }
 }
 
-// Student Controller functions that are used to get/set profile info.
+// Company controller functions that are used to get/set profile information.
 module.exports = {
+    // Update company name.
+    companyUpdateName: (req, res, next) => {
+        if (req.body.name === undefined) {
+            return res.status(400).json({error: "name not received"});
+        }
+        // Find company -> change the name -> save
+        Company.findById(req.account.id, function(err, company) {
+            if (err) {
+                return res.status(500).json({error: "Company not found"});
+            }
+
+            company.name = req.body.name;
+            company.save(function (err, updatedCompany) {
+                if (err) return res.status(500).json({error: "db error"});
+                res.status(200).json({status: "ok"});
+            });
+        })
+    },
+
+    // Get company name by id.
+    companyGetName: (req, res, next) => {
+        // Find company -> return company name
+        Company.findById(req.account.id, function(err, company) {
+            if (err) {
+                return res.status(500).json({error: "Company not found"});
+            }
+
+            res.status(200).json({ "name": company.name });
+        })
+    },
+
+    // Update company contact phone number.
+    companyUpdatePhone: (req, res, next) => {
+        if (req.body.phone === undefined) {
+            return res.status(400).json({error: "phone not received"});
+        }
+        Company.findById(req.account.id, function(err, company) {
+            if (err) {
+                return res.status(500).json({error: "Company not found"});
+            }
+
+            company.phone = req.body.phone;
+            company.save(function (err, updatedCompany) {
+                if (err) return res.status(500).json({error: "db error"});
+                res.status(200).json({status: "ok"});
+            });
+        })
+    },
+
+    companyGetPhone: (req, res, next) => {
+        Company.findById(req.account.id, function(err, company) {
+            if (err) {
+                return res.status(500).json({error: "Company not found"});
+            }
+
+            res.status(200).json({ "phone": company.phone });
+        })
+    },
+
+    companyUpdateDescription: (req, res, next) => {
+        if (req.body.description === undefined) {
+            return res.status(400).json({error: "description not received"});
+        }
+        Company.findById(req.account.id, function(err, company) {
+            if (err) {
+                return res.status(500).json({error: "Company not found"});
+            }
+
+            company.description = req.body.description;
+            company.save(function (err, updatedCompany) {
+                if (err) return res.status(500).json({error: "db error"});
+                res.status(200).json({status: "ok"});
+            });
+        })
+    },
+
+    companyGetDescription: (req, res, next) => {
+        Company.findById(req.account.id, function(err, company) {
+            if (err) {
+                return res.status(500).json({error: "Company not found"});
+            }
+
+            res.status(200).json({ "description": company.description });
+        })
+    },
+
+    // Get full profile information, excluding password and registration method.
+    companyGetFullProfile: (req, res, next) => {
+        Company.findById(req.account.id, function(err, company) {
+            if (err) {
+                return res.status(500).json({ error: "Company not found" });
+            }
+
+            return res.status(200).json(unnestCompany(company));
+        });
+    },
+
+    // Get profile information based on request:
+    // Input example:
+    //      {"id": true, "email": true}
+    // Output:
+    //      {"id": "... company id ...", "email": "johndoe@hotmail.com"}
+    companyGetProfile: (req, res, next) => {
+        Company.findById(req.account.id, function(err, company) {
+            if (err) {
+                return res.status(500).json({error: "Company not found"});
+            }
+            var result = {};
+            if (req.body.id !== undefined) {
+                result.id = company.id;
+            }
+            if (req.body.email !== undefined) {
+                result.email = company.credentials.email;
+            }
+            if (req.body.name !== undefined) {
+                result.name = company.name;
+            }
+            if (req.body.phone !== undefined) {
+                result.phone = company.phone;
+            }
+            if (req.body.description !== undefined) {
+                result.description = company.description;
+            }
+            res.status(200).json(result);
+        });
+    },
+
+    // Update profile information
+    // Input example:
+    //      {"email": "some_email@gmail.com", "name": "Google"}
+    companyUpdateProfile: (req, res, next) => {
+        Company.findById(req.account.id, function(err, company) {
+            if (err) {
+                return res.status(500).json({error: "Company not found"});
+            }
+            if (req.body.email !== undefined) {
+                company.credentials.email = req.body.email;
+            }
+            if (req.body.password !== undefined) {
+                company.credentials.password = req.body.password;
+            }
+            if (req.body.name !== undefined) {
+                company.name = req.body.name;
+            }
+            if (req.body.phone !== undefined) {
+                company.phone = req.body.phone;
+            }
+            if (req.body.description !== undefined) {
+                company.description = req.body.description;
+            }
+            company.save(function (err, updatedCompany) {
+                if (err) return res.status(500).json({error: "db error"});
+
+                return res.status(200).json(unnestCompany(updatedCompany));
+            });
+        });
+    },
+
+    // Puts Company's avatar image into dir_path folder, sets the name to company's id.
+    companyUpdateImage: (dir_path) => {
+        return (req, res, next) => {
+            var file = req.files.avatar;
+
+            var image_name = req.account.id;
+            //TODO: support jpg.
+        	if (file.mimetype === 'image/png') {
+        		image_name += '.png';
+        	} else {
+        		return res.status(415).send({error: "unsupported file type"});
+        	}
+
+            fs.writeFile(path.join(dir_path, image_name), file.data, function(err) {
+        		if (err) {
+        			return res.status(500).send({error: err.message});
+        		}
+                return res.status(200).send({status: 'ok'});
+        	});
+        }
+    },
+
     // Update first name of the user
-    updateFirstName: (req, res, next) => {
+    studentUpdateFirstName: (req, res, next) => {
         if (req.body.firstName === undefined) {
             return res.status(400).json({error: "firstName not received"});
         }
@@ -127,7 +316,7 @@ module.exports = {
     },
 
     // Get student's first name by id.
-    getFirstName: (req, res, next) => {
+    studentGetFirstName: (req, res, next) => {
         Student.findById(req.account.id, function(err, student) {
             if (err) {
                 return res.status(500).json({error: "Student not found"});
@@ -137,7 +326,7 @@ module.exports = {
         })
     },
 
-    updateLastName: (req, res, next) => {
+    studentUpdateLastName: (req, res, next) => {
         if (req.body.lastName === undefined) {
             return res.status(400).json({error: "lastName not received"});
         }
@@ -154,7 +343,7 @@ module.exports = {
         })
     },
 
-    getLastName: (req, res, next) => {
+    studentGetLastName: (req, res, next) => {
         Student.findById(req.account.id, function(err, student) {
             if (err) {
                 return res.status(500).json({error: "Student not found"});
@@ -164,7 +353,7 @@ module.exports = {
         })
     },
 
-    updatePhone: (req, res, next) => {
+    studentUpdatePhone: (req, res, next) => {
         if (req.body.phone === undefined) {
             return res.status(400).json({error: "phone not received"});
         }
@@ -181,7 +370,7 @@ module.exports = {
         })
     },
 
-    getPhone: (req, res, next) => {
+    studentGetPhone: (req, res, next) => {
         Student.findById(req.account.id, function(err, student) {
             if (err) {
                 return res.status(500).json({error: "Student not found"});
@@ -191,7 +380,7 @@ module.exports = {
         })
     },
 
-    updateDescription: (req, res, next) => {
+    studentUpdateDescription: (req, res, next) => {
         if (req.body.description === undefined) {
             return res.status(400).json({error: "description not received"});
         }
@@ -208,7 +397,7 @@ module.exports = {
         })
     },
 
-    getDescription: (req, res, next) => {
+    studentGetDescription: (req, res, next) => {
         Student.findById(req.account.id, function(err, student) {
             if (err) {
                 return res.status(500).json({error: "Student not found"});
@@ -218,22 +407,8 @@ module.exports = {
         })
     },
 
-    saveProfilePicture: (req, res, next) => {
-        Student.findById(req.account.id, function(err, student) {
-            if (err) {
-                return res.status(500).json({error: "Student not found"});
-            }
-            console.log(student);
-            student.profileThumbnail = req.files.picture.data;
-            student.save(function (err, updatedStudent) {
-                if (err) return res.status(500).json({error: "db error"});
-                return res.status(200).json({status: "ok"});
-            });
-        });
-    },
-
     // Get full profile information, excluding password and registration method
-    getFullProfile: (req, res, next) => {
+    studentGetFullProfile: (req, res, next) => {
         Student.findById(req.account.id, function(err, student) {
             if (err) {
                 return res.status(500).json({ error: "Student not found" });
@@ -248,7 +423,7 @@ module.exports = {
     //      {"id": true, "email": true}
     // Output:
     //      {"id": "... student id ...", "email": "johndoe@hotmail.com"}
-    getProfile: (req, res, next) => {
+    studentGetProfile: (req, res, next) => {
         Student.findById(req.account.id, function(err, student) {
             if (err) {
                 return res.status(500).json({error: "Student not found"});
@@ -279,7 +454,7 @@ module.exports = {
     // Update profile information
     // Input example:
     //      {"email": "some_email@gmail.com", "firstName": "John"}
-    updateProfile: (req, res, next) => {
+    studentUpdateProfile: (req, res, next) => {
         Student.findById(req.account.id, function(err, student) {
             if (err) {
                 return res.status(500).json({error: "Student not found"});
@@ -310,7 +485,7 @@ module.exports = {
     },
 
     // Puts Student's avatar image into dir_path folder, sets the name to student's id.
-    updateImage: (dir_path) => {
+    studentUpdateImage: (dir_path) => {
         return (req, res, next) => {
             var file = req.files.avatar;
 
@@ -339,7 +514,7 @@ module.exports = {
     // req.body: {
     //      answers: [String]
     // }
-    updateQuestionnaireAnswer: async (req, res, next) => {
+    studentUpdateQuestionnaireAnswer: async (req, res, next) => {
         var err, questionSet, answer;
 
         // Находим сет вопросов в базе данных
@@ -464,7 +639,7 @@ module.exports = {
     // Вернуть ответ студента на вопрос
     //
     // GET /student/questionnaire/answer/:studentId/:setNumber/:questionNumber
-    getQuestionnaireAnswer: async (req, res, next) => {
+    studentGetQuestionnaireAnswer: async (req, res, next) => {
         var err, answer;
 
         // Находим ответ
@@ -489,7 +664,7 @@ module.exports = {
     // Вернуть ответы студента на вопросы в сете
     //
     // GET /student/questionnaire/set-answers/:studentId/:setNumber
-    getQuestionnaireSetAnswers: async (req, res, next) => {
+    studentGetQuestionnaireSetAnswers: async (req, res, next) => {
         var err, answers;
 
         // Находим ответ
@@ -509,7 +684,7 @@ module.exports = {
     // Вернуть все ответы студента на вопросы
     //
     // GET /student/questionnaire/all-answers/:studentId
-    getAllQuestionnaireAnswers: async (req, res, next) => {
+    studentGetAllQuestionnaireAnswers: async (req, res, next) => {
         var err, answers;
 
         // Находим ответ

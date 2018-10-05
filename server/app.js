@@ -15,7 +15,6 @@ const adminRouter = require('@routes/admin');
 const studentRouter = require('@routes/student');
 const companyRouter = require('@routes/company');
 const generalRouter = require('@routes/general');
-const privateRouter = require('@routes/private');
 
 mongoose.Promise = global.Promise;
 var connectionOptions = {
@@ -70,6 +69,5 @@ app.use('/admin', adminRouter);
 app.use('/student', studentRouter);
 app.use('/company', companyRouter);
 app.use('/', generalRouter);
-app.use('/private', privateRouter);
 
 module.exports = app;
