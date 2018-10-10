@@ -67,6 +67,8 @@ module.exports = {
         details.minSalary = req.body.minSalary;
         details.maxSalary = req.body.maxSalary;
 
+        eval(require('locus'));
+
         // Find Company which creates the vacancy.
         const company = await Company.findById(details.companyId, (err) => {
             if (err) {
