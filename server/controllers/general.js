@@ -35,15 +35,8 @@ module.exports = {
     // like show only name, description and email
 
     // example: /company/5b6cc829e3956907dc4532cd
-    // req.requirements = {name:1, email:1}
-    // will return name and email of this company.
     getCompanyById: (req, res, next) => {
-        var requirements = req.body.requirements || {};
-        delete requirements['credentials.password'];
-        console.log(requirements);
-        console.log(req.params.id);
-        Company.findById(req.params.id, requirements, (err, company) => {
-            console.log(company);
+        Company.findById(req.params.id, { 'credentials.password': 0 }, (err, company) => {
             if (err) {
                 return res.status(500).json(err);
             }
@@ -110,12 +103,8 @@ module.exports = {
     // like show only firstName, lastName and email
 
     // example: /student/5b6cc829e3956907dc4532cd
-    // req.requirements = {firstName:1, email:1}
-    // will return firstName and email of this student.
     getStudentById: (req, res, next) => {
-        var requirements = req.body.requirements || {};
-        delete requirements['credentials.password'];
-        Student.findById(req.params.id, requirements, (err, student) => {
+        Student.findById(req.params.id, {'credentials.password': 0}, (err, student) => {
             if (err) {
                 return res.status(500).json(err);
             }
@@ -176,11 +165,8 @@ module.exports = {
     // returns vacancy by id.
 
     // example: /vacancy/5b6cc829e3956907dc4532cd
-    // req.requirements = {companyId:1, vacancyName:1}
-    // will return companyId and vacancyName of this vacancy.
     getVacancyById: (req, res, next) => {
-        var requirements = req.body.requirements || {};
-        Vacancy.findById(req.params.id, requirements, (err, vacancy) => {
+        Vacancy.findById(req.params.id, (err, vacancy) => {
             if (err) {
                 return res.status(500).json(err);
             }

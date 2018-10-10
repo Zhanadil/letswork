@@ -16,13 +16,13 @@ vacancyRouter.post('/ids/:page/:limit', Controller.getVacancyIds);
 
 vacancyRouter.post('/:page/:limit', Controller.getVacancies);
 
-vacancyRouter.post('/:id', Controller.getVacancyById);
+vacancyRouter.get('/:id', Controller.getVacancyById);
 
 router.use('/vacancy', vacancyRouter);
 
 // ***************************  Companies  *****************************
 
-companyRouter.post('/:id', Controller.getCompanyById);
+companyRouter.get('/:id', Controller.getCompanyById);
 
 // Gets avatar image from default directory.
 companyRouter.use('/image-avatar',
@@ -42,7 +42,7 @@ studentRouter.post('/ids/:page/:limit', Controller.getStudentIds);
 
 studentRouter.post('/:page/:limit', Controller.getStudents);
 
-studentRouter.post('/:id', Controller.getStudentById);
+studentRouter.get('/:id', Controller.getStudentById);
 
 // Gets avatar image from default directory.
 studentRouter.use('/image-avatar',
