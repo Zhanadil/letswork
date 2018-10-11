@@ -26,7 +26,7 @@ companyRouter.get('/:id', Controller.getCompanyById);
 
 // Gets avatar image from default directory.
 companyRouter.use('/image-avatar',
-    express.static(path.join(config.RESOURCES_DIRECTORY, 'avatar/company')));
+    express.static(path.join(config.RESOURCES_DIRECTORY, '/avatar/company')));
 
 // If no image was found, returns default image.
 companyRouter.get('/image-avatar/*', function(req, res, next) {
