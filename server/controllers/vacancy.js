@@ -208,6 +208,12 @@ module.exports = {
         }
         var companyId = vacancy.companyId;
 
+        // Прикладное письмо
+        var coverLetter = null;
+        if (req.body.coverLetter) {
+            coverLetter = req.body.coverLetter;
+        }
+
         // Проверяем айди студента
         var student;
         [err, student] = await to(
@@ -245,7 +251,7 @@ module.exports = {
             }
             application.status = 'pending';
             application.sender = 'student';
-            application.coverLetter = req.body.coverLetter;
+            application.coverLetter = coverLetter;
             application.studentDiscarded = false;
             application.companyDiscarded = false;
 
@@ -261,7 +267,7 @@ module.exports = {
             studentId: req.account._id,
             status: "pending",
             sender: "student",
-            coverLetter: req.body.coverLetter,
+            coverLetter,
             studentDiscarded: false,
             companyDiscarded: false,
         });
