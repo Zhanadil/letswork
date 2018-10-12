@@ -3,7 +3,9 @@ const path = require('path');
 const Company = require('@models/company');
 const Student = require('@models/student');
 const Questionnaire = require('@models/questionnaire');
+const helpers = require('@controllers/helpers');
 const logger = require('@root/logger');
+
 const to = require('await-to-js').default;
 
 unnestCompany = function(company) {
@@ -17,9 +19,12 @@ unnestCompany = function(company) {
 // Вспомогательная функция, цель которой убрать credentials которая содержит
 // пароль и вытащить оттуда email
 unnestStudent = function(student) {
-    var result = student.toObject();
+    var result = student;
+    if (typeof student !== "object") {
+        result = student.toObject();
+    }
+    result.email = result.credentials.email;
     result.credentials = undefined;
-    result.email = student.credentials.email;
     return result;
 }
 
@@ -102,8 +107,6 @@ updateBelbin = async function(studentId, cb) {
                 += answer.answers[i];
         };
     });
-
-
 
     await student.save();
 
@@ -409,13 +412,26 @@ module.exports = {
     },
 
     // Get full profile information, excluding password and registration method
-    studentGetFullProfile: (req, res, next) => {
-        Student.findById(req.account.id, function(err, student) {
-            if (err) {
-                return res.status(500).json({ error: "Student not found" });
-            }
+    studentGetFullProfile: async (req, res, next) => {
+        var err, student;
+        [err, student] = await to(
+            Student.findById(req.account.id)
+        );
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
 
-            return res.status(200).json(unnestStudent(student));
+        var questionSets;
+        [err, questionSets] = await to(
+            helpers.questionSetsInfo(req.account.id)
+        );
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+
+        return res.status(200).json({
+            student: unnestStudent(student),
+            questionSets
         });
     },
 
@@ -507,81 +523,6 @@ module.exports = {
                 return res.status(200).send({status: 'ok'});
         	});
         }
-    },
-
-    // Контроллер возвращает общую информацию по сетам вопросов:
-    // названия, номера и кол-во отвеченных вопросов
-    //
-    // GET /student/questionnaire/question-sets-info/:studentId
-    studentQuestionSetsStatus: async (req, res, next) => {
-        var err, questionSets, answers;
-
-        // Ищем сеты в базе данных
-        [err, questionSets] = await to(
-            Questionnaire.QuestionSet
-                .aggregate([
-                    {
-                        $project: {
-                            setName: 1, // Название сета
-                            setNumber: 1, // Номер сета
-                            questions: { // Кол-во вопросов
-                                $size: '$questions'
-                            }
-                        }
-                    },
-                    {
-                        $sort: { // Сортирует по номеру сета
-                            setNumber: 1
-                        }
-                    }
-                ])
-        );
-        if (err) {
-            return res.status(500).json({error: err.message});
-        }
-
-        // Находим ответы студента
-        [err, answers] = await to(
-            Questionnaire.Answer
-                .aggregate([
-                    {
-                        // Находим ответы только данного студента
-                        $match: {
-                            studentId: req.params.studentId
-                        }
-                    },
-                    {
-                        $group: { // Группируем ответы по номеру сета
-                            _id: '$setNumber',
-                            count: { // Считаем кол-во ответов для каждого сета
-                                $sum: 1
-                            }
-                        }
-                    }
-                ])
-        )
-        if (err) {
-            return res.status(500).json({error: err.message});
-        }
-
-        // Переносим кол-во ответов в questionSets
-        questionSets.forEach((questionSet) => {
-            answers.some((answer) => {
-                // Если номера сетов одинаковые, то меняем questionSets
-                if (answer._id === questionSet.setNumber) {
-                    questionSet.answers = answer.count;
-                    return true;
-                }
-                return false;
-            })
-            // Если ничего не нашли, то значит кол-во ответов = 0
-            if (!questionSet.answer) {
-                questionSet.answers = 0;
-            }
-        })
-
-        // Возвращаем сеты вопросов
-        return res.status(200).json({ questionSets });
     },
 
     // Создать(обновить если существует) ответ на вопрос

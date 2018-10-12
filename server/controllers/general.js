@@ -4,6 +4,7 @@ const Company = require('@models/company');
 const Student = require('@models/student');
 const { Vacancy } = require('@models/vacancy');
 const Questionnaire = require('@models/questionnaire');
+const helpers = require('@controllers/helpers');
 
 // Setting up filters based on request
 filterOut = function(filter) {
@@ -25,7 +26,6 @@ filterOut = function(filter) {
     }
     return result;
 }
-
 
 // Public controller functions that gets, but not changes all public information.
 module.exports = {
@@ -195,31 +195,15 @@ module.exports = {
     },
 
     // Контроллер возвращает общую информацию по сетам вопросов:
-    // названия и номера
+    // названия, номера и кол-во ответов если есть айди студента
     //
-    // GET /questionnaire/question-sets-info
+    // GET /questionnaire/question-sets-info/:studentId
     getQuestionSetsInfo: async (req, res, next) => {
         var err, questionSets;
 
-        // Ищем сеты в базе данных
+        // Ищем инфу сетов
         [err, questionSets] = await to(
-            Questionnaire.QuestionSet
-                .aggregate([
-                    {
-                        $project: {
-                            setName: 1, // Название сета
-                            setNumber: 1, // Номер сета
-                            questions: { // Кол-во вопросов
-                                $size: '$questions'
-                            }
-                        }
-                    },
-                    {
-                        $sort: { // Сортирует по номеру сета
-                            setNumber: 1
-                        }
-                    }
-                ])
+            helpers.questionSetsInfo(req.params.studentId)
         );
         if (err) {
             return res.status(500).json({error: err.message});
