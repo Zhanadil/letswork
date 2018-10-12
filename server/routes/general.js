@@ -63,6 +63,9 @@ questionnaireRouter.get('/question-set/:setNumber',
 questionnaireRouter.get('/question-sets-info',
     Controller.getQuestionSetsInfo);
 
+questionnaireRouter.get('/question-sets-info/:studentId',
+    Controller.getQuestionSetsInfo);
+
 questionnaireRouter.get('/all-question-sets',
     Controller.getAllQuestionSets);
 

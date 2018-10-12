@@ -121,9 +121,6 @@ router.use('/vacancy', vacancyRouter);
 
 // ***************************  Questionnaire  ********************************
 
-questionnaireRouter.get('/question-sets-status/:studentId',
-    ProfileController.studentQuestionSetsStatus);
-
 questionnaireRouter.use(passport.authorize('jwt-student', {session: false}));
 
 questionnaireRouter.post('/answer/:setNumber/:questionNumber',
