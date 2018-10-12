@@ -194,6 +194,41 @@ module.exports = {
         return res.status(200).json({ questionSet });
     },
 
+    // Контроллер возвращает общую информацию по сетам вопросов:
+    // названия и номера
+    //
+    // GET /questionnaire/question-sets-info
+    getQuestionSetsInfo: async (req, res, next) => {
+        var err, questionSets;
+
+        // Ищем сеты в базе данных
+        [err, questionSets] = await to(
+            Questionnaire.QuestionSet
+                .aggregate([
+                    {
+                        $project: {
+                            setName: 1, // Название сета
+                            setNumber: 1, // Номер сета
+                            questions: { // Кол-во вопросов
+                                $size: '$questions'
+                            }
+                        }
+                    },
+                    {
+                        $sort: { // Сортирует по номеру сета
+                            setNumber: 1
+                        }
+                    }
+                ])
+        );
+        if (err) {
+            return res.status(500).json({error: err.message});
+        }
+
+        // Возвращаем сеты вопросов
+        return res.status(200).json({ questionSets });
+    },
+
     // Контроллер возвращает все сеты вопросов
     //
     // GET /questionnaire/all-question-sets

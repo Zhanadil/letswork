@@ -60,6 +60,9 @@ router.use('/student', studentRouter);
 questionnaireRouter.get('/question-set/:setNumber',
     Controller.getQuestionSet);
 
+questionnaireRouter.get('/question-sets-info',
+    Controller.getQuestionSetsInfo);
+
 questionnaireRouter.get('/all-question-sets',
     Controller.getAllQuestionSets);
 
