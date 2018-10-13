@@ -20,10 +20,10 @@ unnestCompany = function(company) {
 // пароль и вытащить оттуда email
 unnestStudent = function(student) {
     var result = student;
-    if (typeof student !== "object") {
+    if (student instanceof Student) {
         result = student.toObject();
     }
-    result.email = result.credentials.email;
+    result.email = student.credentials.email;
     result.credentials = undefined;
     return result;
 }
