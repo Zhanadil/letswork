@@ -82,7 +82,7 @@ module.exports = {
 
         // Сохраняем изменения и возвращаем токен
         await company.save();
-        return res.status(200).json(signIn(company));
+        return res.status(200).json(await signIn(company));
     },
 
     companySignIn: async (req, res, next) => {
