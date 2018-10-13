@@ -21,10 +21,23 @@ authRouter.post('/signup',
     validateBody(schemas.companyRegSchema),
     AuthController.companySignUp);
 
+authRouter.get('/verify/:token', AuthController.companyVerify);
+
 authRouter.post('/signin',
     validateBody(schemas.authSchema),
     passport.authorize('local-company', {session: false}),
     AuthController.companySignIn);
+
+authRouter.post('/forgot-password',
+    validateBody(schemas.forgotPasswordSchema),
+    AuthController.companySendForgotPasswordLink);
+
+authRouter.get('/confirm-forgot-password/:url',
+    AuthController.companyForgotPasswordConfirmation);
+
+authRouter.post('/update-password/:url',
+    validateBody(schemas.resetPasswordSchema),
+    AuthController.companyChangePassword);
 
 authRouter.post('/google',
     passport.authorize('googleToken-company', {session: false}),

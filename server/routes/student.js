@@ -21,10 +21,23 @@ authRouter.post('/signup',
     validateBody(schemas.studentRegSchema),
     AuthController.studentSignUp);
 
+authRouter.get('/verify/:token', AuthController.studentVerify);
+
 authRouter.post('/signin',
     validateBody(schemas.authSchema),
     passport.authorize('local-student', {session: false}),
     AuthController.studentSignIn);
+
+authRouter.post('/forgot-password',
+    validateBody(schemas.forgotPasswordSchema),
+    AuthController.studentSendForgotPasswordLink);
+
+authRouter.get('/confirm-forgot-password/:url',
+    AuthController.studentForgotPasswordConfirmation);
+
+authRouter.post('/update-password/:url',
+    validateBody(schemas.resetPasswordSchema),
+    AuthController.studentChangePassword);
 
 authRouter.post('/google',
     passport.authorize('googleToken-student', {session: false}),
@@ -109,13 +122,13 @@ vacancyRouter.post('/:page/:limit',
     validateBody(schemas.getAllVacancies),
     VacancyController.getAllVacanciesAsStudent);
 
-vacancyRouter.post('/:id',
-    validateBody(schemas.getVacancyById),
-    VacancyController.getVacancyByIdAsStudent);
-
 vacancyRouter.route('/getApplications')
     .get(VacancyController.getStudentApplications)
     .post(VacancyController.getStudentApplications);
+
+vacancyRouter.post('/:id',
+    validateBody(schemas.getVacancyById),
+    VacancyController.getVacancyByIdAsStudent);
 
 router.use('/vacancy', vacancyRouter);
 
