@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 
-// Schema of application, contains vacancyId, company id, student id, and
-// the status of the application.
+// Схема заявок:
+// Содержит айди вакансии, компании и студента, так же хранит инфо о том кто
+// отправил заявку, сопроводительное письмо, и скрыли ли заявку студент или компания.
 const applicationSchema = mongoose.Schema({
     vacancyId: String,
     companyId: String,
@@ -15,6 +16,7 @@ const applicationSchema = mongoose.Schema({
         type: String,
         enum: ['student', 'company'],
     },
+    coverLetter: String,
     studentDiscarded: Boolean,
     companyDiscarded: Boolean,
 });

@@ -1,5 +1,7 @@
 const joi = require('joi');
 
+const Questionnaire = require('@models/questionnaire');
+
 const authSchema = joi.object().keys({
     email: joi.string().email({ minDomainAtoms: 2 }).required(),
     password: joi.string().required(),
@@ -25,6 +27,10 @@ const newVacancySchema = joi.object().keys({
     maxSalary: joi.number(),
     vacancyField: joi.string().required(),
     vacancyName: joi.string().required(),
+});
+const studentVacancyApplySchema = joi.object().keys({
+    vacancyId: joi.string().required(),
+    coverLetter: joi.string(),
 });
 const studentVacancyApplicationSchema = joi.object().keys({
     vacancyId: joi.string().required(),
@@ -60,6 +66,37 @@ const getAllVacancies = getVacancyById.keys({
         vacancyField: joi.string(),
     }),
 });
+const deleteQuestionSchema = joi.object().keys({
+    setNumber: joi.number().min(0).required(),
+    questionNumber: joi.number().min(0).required(),
+});
+const updateQuestionSchema = joi.object().keys({
+    questionType: joi.string().valid(
+        // Берет все типы вопросов со схемы вопросника в базе данных
+        // QuestionSet('questions.questionType').enumValues
+        Questionnaire.QuestionSet.schema.paths.questions.schema.paths.questionType.enumValues
+    ).required(),
+    setNumber: joi.number().min(0).required(),
+    questionNumber: joi.number().min(0).required(),
+    questionText: joi.string().required(),
+    answers: joi.array().items(joi.string()).required(),
+});
+const updateBelbinQuestionSchema = joi.object().keys({
+    setNumber: joi.number().min(0).required(),
+    questionNumber: joi.number().min(0).required(),
+    questions: joi.array().items(joi.string()).length(8).required(),
+});
+const createQuestionSetSchema = joi.object().keys({
+    setNumber: joi.number().min(0).required(),
+    setName: joi.string().required(),
+});
+const deleteQuestionSetSchema = joi.object().keys({
+    setNumber: joi.number().min(0).required(),
+});
+const updateQuestionSetSchema = joi.object().keys({
+    setNumber: joi.number().min(0).required(),
+    setName: joi.string().required(),
+});
 
 module.exports = {
     // Helper that checks that request body corresponds to a schema
@@ -89,11 +126,18 @@ module.exports = {
         forgotPasswordSchema,
         resetPasswordSchema,
         newVacancySchema,
+        studentVacancyApplySchema,
         studentVacancyApplicationSchema,
         companyVacancyApplicationSchema,
         getVacancySchema,
         studentAnswerSchema,
         getVacancyById,
         getAllVacancies,
+        updateQuestionSchema,
+        updateBelbinQuestionSchema,
+        deleteQuestionSchema,
+        createQuestionSetSchema,
+        deleteQuestionSetSchema,
+        updateQuestionSetSchema,
     },
 };

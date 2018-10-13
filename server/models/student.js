@@ -9,11 +9,21 @@ const credentialsSchema = require('@models/credentials_schema').credentialsSchem
 // are stored there.
 const studentSchema = mongoose.Schema({
     credentials: credentialsSchema,
+    userType: {
+        type: String,
+        enum: ["user", "admin"],
+        default: "user",
+    },
     firstName: String,
     lastName: String,
     phone: String,
     description: String,
     vacancies: [String],
+    belbinResults: [{
+        categoryName: String,
+        pointsNumber: Number,
+        pointsPercentage: Number,
+    }]
 });
 
 const student = mongoose.model('student', studentSchema);

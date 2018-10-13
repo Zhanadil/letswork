@@ -7,11 +7,11 @@ const Student = require('@models/student');
 const { Vacancy, Application } = require('@models/vacancy');
 const { JWT_SECRET } = require('@configuration');
 
-statusId = (status, sender) => {
-    if (status === "pending" && sender === "company") {
+statusId = (requester, status, sender) => {
+    if (status === "pending" && sender !== requester) {
         return 1;
     }
-    if (status === "pending" && sender === "student") {
+    if (status === "pending" && sender === requester) {
         return 2;
     }
     if (status === "accepted") {
@@ -83,6 +83,33 @@ module.exports = {
         // Add vacancy to company's vacancy list.
         company.vacancies.push(vacancy._id);
         await company.save()
+        return res.status(200).json({status: "ok"});
+    },
+
+    // Удалить вакансию по айди
+    removeVacancy: async (req, res, next) => {
+        var err, vacancy;
+        [err, vacancy] = await to(Vacancy.findById(req.params.id));
+        if (err) {
+            return res.status(500).json({error: err.message});
+        }
+        if (!vacancy) {
+            return res.status(400).json({error: "vacancy doesn't exist"});
+        }
+        if (vacancy.companyId !== req.account._id.toString()) {
+            return res.status(403).json({error: "forbidden, vacancy created by other company"});
+        }
+
+        [err] = await to(Vacancy.deleteOne({_id: req.params.id}));
+        if (err) {
+            return res.status(500).json({error: err.message});
+        }
+
+        [err] = await to(Application.deleteMany({vacancyId: req.params.id}));
+        if (err) {
+            return res.status(500).json({error: err.message});
+        }
+
         return res.status(200).json({status: "ok"});
     },
 
@@ -163,40 +190,55 @@ module.exports = {
 
     // Студент отправляет заявку на вакансию
     // req.body: {
-    //      vacancyId: String
+    //      vacancyId: String,
+    //      coverLetter: String,
     // }
     studentApplication: async (req, res, next) => {
         // Айди компании которая создала вакансию, нужно для создания заявки
-        var companyId;
+        var err, vacancy;
         // Проверяем айди вакансии на действительность
-        await Vacancy.findById(req.body.vacancyId, (err, vacancy) => {
-            if (err) {
-                return res.status(500).json({error: err.message});
-            }
-            if (!vacancy) {
-                return res.status(400).json({error: "vacancy not found"});
-            }
-            companyId = vacancy.companyId;
-        });
+        [err, vacancy] = await to(
+            Vacancy.findById(req.body.vacancyId)
+        );
+        if (err) {
+            return res.status(500).json({error: err.message});
+        }
+        if (!vacancy) {
+            return res.status(400).json({error: "vacancy not found"});
+        }
+        var companyId = vacancy.companyId;
 
-        // Find the student.
-        var student = await Student.findById(req.account._id, (err) => {
-            if (err) {
-                return res.status(500).json({error: err.message});
-            }
-        });
+        // Прикладное письмо
+        var coverLetter = null;
+        if (req.body.coverLetter) {
+            coverLetter = req.body.coverLetter;
+        }
+
+        // Проверяем айди студента
+        var student;
+        [err, student] = await to(
+            Student.findById(req.account._id)
+        );
+        if (err) {
+            return res.status(500).json({error: err.message});
+        }
         if (!student) {
             return res.status(400).json({error: "student not found"});
         }
 
-        var application = await Application.findOne(
-                {studentId: req.account._id, vacancyId: req.body.vacancyId},
-                (err) => {
-                    if (err) {
-                        return res.status(500).json({error: err.message});
-                    }
+        // Находим заявку
+        var application;
+        [err, application] = await to(
+            Application.findOne(
+                {
+                    studentId: req.account._id,
+                    vacancyId: req.body.vacancyId
                 }
-            );
+            )
+        );
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
 
         // Если заявка уже существует
         if (application) {
@@ -209,6 +251,7 @@ module.exports = {
             }
             application.status = 'pending';
             application.sender = 'student';
+            application.coverLetter = coverLetter;
             application.studentDiscarded = false;
             application.companyDiscarded = false;
 
@@ -217,26 +260,28 @@ module.exports = {
             return res.status(200).json({status: "ok"});
         }
 
+        // Если заявка не существует, то создаем новую
         application = await new Application({
             vacancyId: req.body.vacancyId,
             companyId: companyId,
             studentId: req.account._id,
             status: "pending",
             sender: "student",
+            coverLetter,
             studentDiscarded: false,
             companyDiscarded: false,
         });
         await application.save();
 
-        // Add vacancy to student's vacancy list.
+        // Добавляем вакансию в список вакансий связанных со студентом
         student.vacancies.push(req.body.vacancyId);
         await student.save();
 
-        return res.status(200).json({status: "ok"});
+        return res.status(200).json({ status: "ok" });
     },
 
     // Изменить статус вакансии, requirements для каждого случая брать из statusRequirements.
-    // Чтобы изменить статус, для этого нынешний статус должен быть из массива requirements.status
+    // Для того чтобы изменить статус, нынешний статус должен быть из массива requirements.status
     // И отправитель должен быть requirements.sender
     // Пример использования:
     //
@@ -259,7 +304,7 @@ module.exports = {
                 }
                 sender = decoded.sub.type;
             });
-            var studentId = (sender == "company" ? req.body.studentId : req.account._id);
+            var studentId = (sender === "company" ? req.body.studentId : req.account._id);
             var vacancyId = req.body.vacancyId;
             // Проверяем айди вакансии на действительность
             await Vacancy.findById(vacancyId, (err, vacancy) => {
@@ -435,13 +480,17 @@ module.exports = {
             applicationsFilter.status = "rejected";
         }
         // Находим все заявки студента, которые он не скрыл в отфильтрованном виде
-        [err, applications] = await to(Application.find(applicationsFilter));
+        [err, applications] = await to(
+            Application.find(applicationsFilter).lean()
+        );
         if (err) {
             return res.status(500).json({error: err.message});
         }
 
         // Выписываем айди отфильтрованных вакансий и айди студентов находящихся в заявке
         applications.forEach(v => {
+            v.status = statusId("company", v.status, v.sender);
+            v.sender = undefined;
             vacancyIds.push(v.vacancyId);
             if (studentIds.indexOf(v.studentId) === -1) {
                 studentIds.push(v.studentId);
@@ -489,7 +538,6 @@ module.exports = {
 
     // Возвращает ВСЕ вакансии и если студент участвовал в них, то вместе со статусом.
     // При этом заранее пагинирует, например: вторая страница 10 запросов
-
     // Запрос содержит фильтры по мин зп(minSalary), макс зп(maxSalary),
     // область работы(vacancyField), и др.
     // Например: request.filter = {minSalary: 100000, type: ["full-time"]}
@@ -541,7 +589,7 @@ module.exports = {
             applications.some(application => {
                 if (vacancy._id.toString() === application.vacancyId) {
                     vacancies[i].status =
-                        statusId(application.status, application.sender);
+                        statusId("student", application.status, application.sender);
                     return true;
                 }
                 return false;
@@ -571,7 +619,7 @@ module.exports = {
             return res.status(500).json({error: err.message});
         }
         if (!vacancy) {
-            return res.status(204).json({error: "Vacancy doesn't exist"});
+            return res.status(400).json({error: "Vacancy doesn't exist"});
         }
 
         // Находим все заявки студента которые он не скрыл
@@ -596,13 +644,12 @@ module.exports = {
         // Проверяем если на вакансию есть заявка студента,
         // то добавляем статус заявки
         if (application) {
-            vacancy.status = statusId(application.status, application.sender);
+            vacancy.status = statusId("student", application.status, application.sender);
         } else {
             vacancy.status = 0;
         }
         return res.status(200).json({vacancy});
     },
-
 
     // Возвращает все заявки связанные со студентом и всю информацию о вакансиях
     // и компаниях связанных с этими заявками

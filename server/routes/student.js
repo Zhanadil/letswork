@@ -9,25 +9,24 @@ const questionnaireRouter = express.Router();
 
 const passport = require('passport');
 const passportConfig = require('@root/passport');
-const { validateBody, schemas } = require('@helpers/routeHelpers');
+const { validateBody, schemas } = require('@routes/helpers');
 
-const StudentsAuthController = require('@controllers/student/auth');
-const StudentsProfileController = require('@controllers/student/profile');
-const StudentsVacancyController = require('@controllers/student/vacancy');
+const AuthController = require('@controllers/auth');
+const ProfileController = require('@controllers/profile');
 const VacancyController = require('@controllers/vacancy');
 
 // ***********  All student authorization related requests  *****************
 
 authRouter.post('/signup',
     validateBody(schemas.studentRegSchema),
-    StudentsAuthController.signUp);
+    AuthController.studentSignUp);
 
 authRouter.get('/verify/:token', StudentsAuthController.verify);
 
 authRouter.post('/signin',
     validateBody(schemas.authSchema),
     passport.authorize('local-student', {session: false}),
-    StudentsAuthController.signIn);
+    AuthController.studentSignIn);
 
 authRouter.post('/forgot-password',
     validateBody(schemas.forgotPasswordSchema),
@@ -42,7 +41,7 @@ authRouter.post('/update-password/:url',
 
 authRouter.post('/google',
     passport.authorize('googleToken-student', {session: false}),
-    StudentsAuthController.googleOAuth);
+    AuthController.studentGoogleOAuth);
 
 router.use('/auth', authRouter);
 
@@ -53,45 +52,45 @@ privateRouter.use(passport.authorize('jwt-student', {session: false}));
 
 // Update student's first name and get student's first name by id.
 privateRouter.route('/firstName')
-    .post(StudentsProfileController.updateFirstName)
-    .get(StudentsProfileController.getFirstName);
+    .post(ProfileController.studentUpdateFirstName)
+    .get(ProfileController.studentGetFirstName);
 
 // same.
 privateRouter.route('/lastName')
-    .post(StudentsProfileController.updateLastName)
-    .get(StudentsProfileController.getLastName);
+    .post(ProfileController.studentUpdateLastName)
+    .get(ProfileController.studentGetLastName);
 
 privateRouter.route('/phone')
-    .post(StudentsProfileController.updatePhone)
-    .get(StudentsProfileController.getPhone);
+    .post(ProfileController.studentUpdatePhone)
+    .get(ProfileController.studentGetPhone);
 
 privateRouter.route('/description')
-    .post(StudentsProfileController.updateDescription)
-    .get(StudentsProfileController.getDescription);
+    .post(ProfileController.studentUpdateDescription)
+    .get(ProfileController.studentGetDescription);
 
 /*router.route('/private/profile-picture')
     .post(passport.authorize('jwt-student', {session: false}),
     StudentsController.saveProfilePicture);*/
 
 // Get full profile information.
-privateRouter.get('/profile', StudentsProfileController.getFullProfile);
+privateRouter.get('/profile', ProfileController.studentGetFullProfile);
 
 // Get profile information based on request:
 // Input example:
 //      {"id": true, "email": true}
 // Output:
 //      {"id": "... company id ...", "email": "johndoe@hotmail.com"}
-privateRouter.post('/profile', StudentsProfileController.getProfile);
+privateRouter.post('/profile', ProfileController.studentGetProfile);
 
 // Update profile information
 // Input example:
 //      {"email": "some_email@gmail.com", "firstName": "John"}
-privateRouter.post('/update-profile', StudentsProfileController.updateProfile);
+privateRouter.post('/update-profile', ProfileController.studentUpdateProfile);
 
 
 // Puts avatar image to default directory(it's inside config folder, name=RESOURCES_DIRECTORY)
 privateRouter.post('/image-avatar',
-    StudentsProfileController.updateImage(path.join(config.RESOURCES_DIRECTORY, 'avatar/student')));
+    ProfileController.studentUpdateImage(path.join(config.RESOURCES_DIRECTORY, 'avatar/student')));
 
 router.use('/private', privateRouter);
 
@@ -100,7 +99,7 @@ router.use('/private', privateRouter);
 vacancyRouter.use(passport.authorize('jwt-student', {session: false}));
 
 vacancyRouter.post('/apply',
-    validateBody(schemas.studentVacancyApplicationSchema),
+    validateBody(schemas.studentVacancyApplySchema),
     VacancyController.studentApplication);
 
 vacancyRouter.post('/cancel',
@@ -139,7 +138,7 @@ questionnaireRouter.use(passport.authorize('jwt-student', {session: false}));
 
 questionnaireRouter.post('/answer/:setNumber/:questionNumber',
     validateBody(schemas.studentAnswerSchema),
-    StudentsProfileController.updateQuestionnaireAnswer);
+    ProfileController.studentUpdateQuestionnaireAnswer);
 
 router.use('/questionnaire', questionnaireRouter);
 

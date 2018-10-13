@@ -11,6 +11,28 @@ const Company = require('@models/company');
 // *************************** Student Passport **************************
 
 // Accessing Website by JsonWebToken
+passport.use('jwt-admin', new JwtStrategy({
+    jwtFromRequest: ExtractJwt.fromHeader('authorization'),
+    secretOrKey: JWT_SECRET
+}, async (payload, done) => {
+    try {
+        const student = await Student.findById(payload.sub.id);
+
+        if (!student) {
+            return done(null, false);
+        }
+
+        if (student.userType !== "admin") {
+            return done(null, false);
+        }
+
+        return done(null, student);
+    } catch(error) {
+        return done(error, false);
+    }
+}));
+
+// Accessing Website by JsonWebToken
 passport.use('jwt-student', new JwtStrategy({
     jwtFromRequest: ExtractJwt.fromHeader('authorization'),
     secretOrKey: JWT_SECRET

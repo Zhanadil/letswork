@@ -1,5 +1,5 @@
 {
-    "DBHost": "mongodb://localhost:27017/love2work_production",
-    "LOGS_DIRECTORY": "srv/love2work/production/logs",
-    "RESOURCES_DIRECTORY": "srv/love2work/production/resources"
+    "DBHost": "mongodb://prodrw:zhan1248168421@localhost:27017/love2work_production?authMechanism=DEFAULT",
+    "LOGS_DIRECTORY": "/srv/love2work/production/logs",
+    "RESOURCES_DIRECTORY": "/srv/love2work/production/resources"
 }
