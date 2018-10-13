@@ -6,6 +6,19 @@ const Student = require('@models/student');
 const mailer = require('@controllers/mailer');
 const { hashPassword, signToken } = require('@controllers/helpers');
 
+const signIn = async (user) => {
+    var token = await signToken(user);
+    var ret = {
+        token,
+        confirmed: user.credentials.confirmed,
+    };
+    if ((user instanceof Student) && (user.userType === 'admin')) {
+        ret.userType = 'admin';
+    }
+
+    return ret;
+}
+
 // Company authorization methods controller
 module.exports = {
     // Регистрация: требуются почта, пароль и название компании
@@ -46,8 +59,7 @@ module.exports = {
         mailer.sendCompanyRegistrationEmail(newCompany);
 
         // Возвращаем токен для доступа к сайту
-        const token = await signToken(newCompany);
-        return res.status(200).json({ token });
+        return res.status(200).json(await signIn(newCompany));
     },
 
     // Подтверждаем аккаунт если ссылка верная
@@ -70,13 +82,11 @@ module.exports = {
 
         // Сохраняем изменения и возвращаем токен
         await company.save();
-        const token = await signToken(company);
-        return res.status(200).json({ token });
+        return res.status(200).json(await signIn(company));
     },
 
     companySignIn: async (req, res, next) => {
-        const token = await signToken(req.account);
-        res.status(200).json({ token });
+        res.status(200).json(await signIn(req.account));
     },
 
     // Высылает ссылку на обновление пароля
@@ -106,8 +116,6 @@ module.exports = {
         await company.save();
 
         mailer.sendCompanyForgotPasswordLink(company);
-
-        console.log(company);
 
         return res.status(200).json({status: "ok"});
     },
@@ -176,17 +184,12 @@ module.exports = {
         company.credentials.forgotPasswordExpirationDate = null;
         await company.save();
 
-        console.log(company);
-
-        const token = await signToken(company);
-
-        return res.status(200).json({token});
+        return res.status(200).json(await signIn(company));
     },
 
     // Sign up a user by google account
     companyGoogleOAuth: async (req, res, next) => {
-        const token = await signToken(req.account);
-        res.status(200).json({ token });
+        res.status(200).json(await signIn(req.account));
     },
 
     // Регистрация студента по почте и паролю
@@ -223,8 +226,7 @@ module.exports = {
         mailer.sendStudentRegistrationEmail(newStudent);
 
         // Возвращаем токен
-        const token = await signToken(newStudent);
-        return res.status(200).json({ token });
+        return res.status(200).json(await signIn(newStudent));
     },
 
     // Подтверждение аккаунта, если ссылка верная, то переносим данные
@@ -248,21 +250,11 @@ module.exports = {
 
         // Сохраняем и возвращаем токен
         await student.save();
-        const token = await signToken(student);
-        return res.status(200).json({ token });
+        return res.status(200).json(await signIn(student));
     },
 
     studentSignIn: async (req, res, next) => {
-        const token = await signToken(req.account);
-
-        if (req.account.userType === "admin") {
-            return res.status(200).json({
-                token,
-                isAdmin: true,
-            })
-        }
-
-        return res.status(200).json({ token });
+        return res.status(200).json(await signIn(req.account));
     },
 
     // Высылает ссылку на обновление пароля
@@ -359,14 +351,11 @@ module.exports = {
         student.credentials.forgotPasswordExpirationDate = null;
         await student.save();
 
-        const token = await signToken(student);
-
-        return res.status(200).json({token});
+        return res.status(200).json(await signIn(student));
     },
 
     // Sign up a user by google account
     studentGoogleOAuth: async (req, res, next) => {
-        const token = await signToken(req.account);
-        return res.status(200).json({ token });
+        return res.status(200).json(await signIn(req.account));
     },
 };
