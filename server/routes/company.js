@@ -21,7 +21,7 @@ authRouter.post('/signup',
     validateBody(schemas.companyRegSchema),
     AuthController.companySignUp);
 
-authRouter.get('/verify/:token', CompanyAuthController.verify);
+authRouter.get('/verify/:token', AuthController.companyVerify);
 
 authRouter.post('/signin',
     validateBody(schemas.authSchema),
@@ -30,14 +30,14 @@ authRouter.post('/signin',
 
 authRouter.post('/forgot-password',
     validateBody(schemas.forgotPasswordSchema),
-    CompanyAuthController.sendForgotPasswordLink);
+    AuthController.companySendForgotPasswordLink);
 
 authRouter.get('/confirm-forgot-password/:url',
-    CompanyAuthController.forgotPasswordConfirmation);
+    AuthController.companyForgotPasswordConfirmation);
 
 authRouter.post('/update-password/:url',
     validateBody(schemas.resetPasswordSchema),
-    CompanyAuthController.changePassword);
+    AuthController.companyChangePassword);
 
 authRouter.post('/google',
     passport.authorize('googleToken-company', {session: false}),

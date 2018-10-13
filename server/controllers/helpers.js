@@ -1,4 +1,5 @@
 const to = require('await-to-js').default;
+const bcrypt = require('bcrypt');
 
 const JWT = require('jsonwebtoken');
 const { JWT_SECRET } = require('@configuration');
@@ -8,6 +9,11 @@ const Questionnaire = require('@models/questionnaire');
 
 // Registers JsonWebToken for a user
 module.exports = {
+    hashPassword: async (password) => {
+        const salt = await bcrypt.genSalt(10);
+        return await bcrypt.hash(password, salt);
+    },
+
     signToken: async (user) => {
         var type = '';
         if (user instanceof Company) {
