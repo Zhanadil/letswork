@@ -11,6 +11,7 @@ const to = require('await-to-js').default;
 unnestCompany = function(company) {
     var result = company.toObject();
     result.email = company.credentials.email;
+    result.confirmed = company.credentials.confirmed;
     result.credentials = undefined;
     return result;
 }
@@ -24,6 +25,7 @@ unnestStudent = function(student) {
         result = student.toObject();
     }
     result.email = student.credentials.email;
+    result.confirmed = student.credentials.confirmed;
     result.credentials = undefined;
     return result;
 }
