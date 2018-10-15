@@ -23,6 +23,10 @@ authRouter.post('/signup',
 
 authRouter.get('/verify/:token', AuthController.studentVerify);
 
+authRouter.get('/resend-verification',
+    passport.authorize('jwt-student', { session: false }),
+    AuthController.studentResendVerification);
+
 authRouter.post('/signin',
     validateBody(schemas.authSchema),
     passport.authorize('local-student', {session: false}),

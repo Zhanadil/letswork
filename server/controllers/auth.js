@@ -85,6 +85,25 @@ module.exports = {
         return res.status(200).json(await signIn(company));
     },
 
+    companyResendVerification: async (req, res, next) => {
+        // Если почта уже подтверждена, то выходим
+        if (req.account.credentials.confirmed) {
+            return res.status(400).json({
+                error: "Email is already confirmed"
+            });
+        }
+
+        req.account.credentials.confirmationToken = await nanoid();
+
+        await req.account.save();
+
+        // Отправляем письмо с подтверждением
+        mailer.sendCompanyRegistrationEmail(req.account);
+
+        // Возвращаем токен для доступа к сайту
+        return res.status(200).json({ status: "ok" });
+    },
+
     companySignIn: async (req, res, next) => {
         res.status(200).json(await signIn(req.account));
     },
@@ -255,6 +274,25 @@ module.exports = {
 
     studentSignIn: async (req, res, next) => {
         return res.status(200).json(await signIn(req.account));
+    },
+
+    studentResendVerification: async (req, res, next) => {
+        // Если почта уже подтверждена, то выходим
+        if (req.account.credentials.confirmed) {
+            return res.status(400).json({
+                error: "Email is already confirmed"
+            });
+        }
+
+        req.account.credentials.confirmationToken = await nanoid();
+
+        await req.account.save();
+
+        // Отправляем письмо с подтверждением
+        mailer.sendStudentRegistrationEmail(req.account);
+
+        // Возвращаем токен для доступа к сайту
+        return res.status(200).json({ status: "ok" });
     },
 
     // Высылает ссылку на обновление пароля

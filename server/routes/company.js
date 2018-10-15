@@ -23,6 +23,10 @@ authRouter.post('/signup',
 
 authRouter.get('/verify/:token', AuthController.companyVerify);
 
+authRouter.get('/resend-verification',
+    passport.authorize('jwt-company', { session: false }),
+    AuthController.companyResendVerification);
+
 authRouter.post('/signin',
     validateBody(schemas.authSchema),
     passport.authorize('local-company', {session: false}),
