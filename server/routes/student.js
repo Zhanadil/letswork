@@ -140,6 +140,12 @@ questionnaireRouter.post('/answer/:setNumber/:questionNumber',
     validateBody(schemas.studentAnswerSchema),
     ProfileController.studentUpdateQuestionnaireAnswer);
 
+questionnaireRouter.get('/question-set/:setNumber',
+    ProfileController.studentGetQuestionSet);
+
+questionnaireRouter.get('/all-question-sets',
+    ProfileController.studentGetAllQuestionSets);
+
 router.use('/questionnaire', questionnaireRouter);
 
 module.exports = router;

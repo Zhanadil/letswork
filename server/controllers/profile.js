@@ -716,4 +716,72 @@ module.exports = {
 
         return res.status(200).json({answers});
     },
+
+    // Контроллер возвращает сет вопросов анкеты по номеру сета и ответы студента
+    //
+    // GET /student/questionnaire/question-set/:setNumber
+    studentGetQuestionSet: async (req, res, next) => {
+        var err, questionSet, answers;
+
+        // Ищем сет в базе данных
+        [err, questionSet] = await to(
+            Questionnaire.QuestionSet.find({
+                setNumber: req.params.setNumber,
+            })
+        );
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+
+        // Находим ответ
+        [err, answers] = await to(
+            Questionnaire.Answer.find({
+                studentId: req.account._id,
+                setNumber: req.params.setNumber,
+            }).sort({questionNumber: 1})
+        );
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+
+        // Возвращаем сет вопросов
+        return res.status(200).json({
+            questionSet,
+            answers,
+        });
+    },
+
+    // Контроллер возвращает все сеты вопросов и ответы студента
+    //
+    // GET /student/questionnaire/all-question-sets
+    studentGetAllQuestionSets: async (req, res, next) => {
+        var err, questionSets, answers;
+
+        // Ищем сеты в базе данных
+        [err, questionSets] = await to(
+            Questionnaire.QuestionSet.find({}).sort({ setNumber: 1 })
+        );
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+
+        // Находим ответы
+        [err, answers] = await to(
+            Questionnaire.Answer.find({
+                studentId: req.account._id,
+            }).sort({
+                setNumber: 1,
+                questionNumber: 1,
+            })
+        );
+        if (err) {
+            return res.status(500).json({error: err.message});
+        }
+
+        // Возвращаем сеты вопросов и ответы
+        return res.status(200).json({
+            questionSets,
+            answers,
+        });
+    },
 };
