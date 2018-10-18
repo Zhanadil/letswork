@@ -124,99 +124,71 @@ updateBelbin = async function(studentId, cb) {
 module.exports = {
     // Update company name.
     companyUpdateName: (req, res, next) => {
-        if (req.body.name === undefined) {
-            return res.status(400).json({error: "name not received"});
-        }
-        // Find company -> change the name -> save
-        Company.findById(req.account.id, function(err, company) {
+        req.user.name = req.body.name;
+        req.user.save(function (err, company) {
             if (err) {
-                return res.status(500).json({error: "Company not found"});
+                return res.status(500).json({ error: err.message });
             }
-
-            company.name = req.body.name;
-            company.save(function (err, updatedCompany) {
-                if (err) return res.status(500).json({error: "db error"});
-                res.status(200).json({status: "ok"});
+            return res.status(200).json({
+                company
             });
-        })
+        });
     },
 
     // Get company name by id.
     companyGetName: (req, res, next) => {
-        // Find company -> return company name
-        Company.findById(req.account.id, function(err, company) {
-            if (err) {
-                return res.status(500).json({error: "Company not found"});
-            }
-
-            res.status(200).json({ "name": company.name });
-        })
+        return res.status(200).json({
+            "name": req.user.name
+        });
     },
 
     // Update company contact phone number.
     companyUpdatePhone: (req, res, next) => {
-        if (req.body.phone === undefined) {
-            return res.status(400).json({error: "phone not received"});
-        }
-        Company.findById(req.account.id, function(err, company) {
+        req.user.phone = req.body.phone;
+        req.user.save(function (err, company) {
             if (err) {
-                return res.status(500).json({error: "Company not found"});
+                return res.status(500).json({
+                    error: err.message
+                });
             }
-
-            company.phone = req.body.phone;
-            company.save(function (err, updatedCompany) {
-                if (err) return res.status(500).json({error: "db error"});
-                res.status(200).json({status: "ok"});
+            return res.status(200).json({
+                company
             });
-        })
+        });
     },
 
     companyGetPhone: (req, res, next) => {
-        Company.findById(req.account.id, function(err, company) {
-            if (err) {
-                return res.status(500).json({error: "Company not found"});
-            }
-
-            res.status(200).json({ "phone": company.phone });
-        })
+        return res.status(200).json({
+            "phone": req.user.phone
+        });
     },
 
     companyUpdateDescription: (req, res, next) => {
-        if (req.body.description === undefined) {
-            return res.status(400).json({error: "description not received"});
-        }
-        Company.findById(req.account.id, function(err, company) {
+        req.user.description = req.body.description;
+        req.user.save(function (err, company) {
             if (err) {
-                return res.status(500).json({error: "Company not found"});
+                return res.status(500).json({
+                    error: err.message
+                });
             }
 
-            company.description = req.body.description;
-            company.save(function (err, updatedCompany) {
-                if (err) return res.status(500).json({error: "db error"});
-                res.status(200).json({status: "ok"});
+            return res.status(200).json({
+                company
             });
-        })
+        });
     },
 
     companyGetDescription: (req, res, next) => {
-        Company.findById(req.account.id, function(err, company) {
-            if (err) {
-                return res.status(500).json({error: "Company not found"});
-            }
-
-            res.status(200).json({ "description": company.description });
-        })
+        return res.status(200).json({
+            "description": req.user.description
+        });
     },
 
     // Get full profile information, excluding password and registration method.
     companyGetFullProfile: (req, res, next) => {
-        Company.findById(req.account.id, function(err, company) {
-            if (err) {
-                return res.status(500).json({ error: "Company not found" });
-            }
-
-            return res.status(200).json(unnestCompany(company));
-        });
+        return res.status(200).json(
+            unnestCompany(req.user)
+        );
     },
 
     // Get profile information based on request:
@@ -225,7 +197,7 @@ module.exports = {
     // Output:
     //      {"id": "... company id ...", "email": "johndoe@hotmail.com"}
     companyGetProfile: (req, res, next) => {
-        Company.findById(req.account.id, function(err, company) {
+        Company.findById(req.user.id, function(err, company) {
             if (err) {
                 return res.status(500).json({error: "Company not found"});
             }
@@ -253,30 +225,28 @@ module.exports = {
     // Input example:
     //      {"email": "some_email@gmail.com", "name": "Google"}
     companyUpdateProfile: (req, res, next) => {
-        Company.findById(req.account.id, function(err, company) {
+        if (req.body.email !== undefined) {
+            req.user.credentials.email = req.body.email;
+        }
+        if (req.body.name !== undefined) {
+            req.user.name = req.body.name;
+        }
+        if (req.body.phone !== undefined) {
+            req.user.phone = req.body.phone;
+        }
+        if (req.body.description !== undefined) {
+            req.user.description = req.body.description;
+        }
+        req.user.save(function (err, updatedCompany) {
             if (err) {
-                return res.status(500).json({error: "Company not found"});
+                return res.status(500).json({
+                    error: err.message
+                });
             }
-            if (req.body.email !== undefined) {
-                company.credentials.email = req.body.email;
-            }
-            if (req.body.password !== undefined) {
-                company.credentials.password = req.body.password;
-            }
-            if (req.body.name !== undefined) {
-                company.name = req.body.name;
-            }
-            if (req.body.phone !== undefined) {
-                company.phone = req.body.phone;
-            }
-            if (req.body.description !== undefined) {
-                company.description = req.body.description;
-            }
-            company.save(function (err, updatedCompany) {
-                if (err) return res.status(500).json({error: "db error"});
 
-                return res.status(200).json(unnestCompany(updatedCompany));
-            });
+            return res.status(200).json(
+                unnestCompany(updatedCompany)
+            );
         });
     },
 
@@ -285,7 +255,7 @@ module.exports = {
         return (req, res, next) => {
             var file = req.files.avatar;
 
-            var image_name = req.account.id;
+            var image_name = req.user.id;
             //TODO: support jpg.
         	if (file.mimetype === 'image/png') {
         		image_name += '.png';

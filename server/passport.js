@@ -4,6 +4,8 @@ const JwtStrategy = require('passport-jwt').Strategy;
 const GooglePlusTokenStrategy = require('passport-google-plus-token');
 const { ExtractJwt } = require('passport-jwt');
 
+const to = require('await-to-js').default;
+
 const { JWT_SECRET, GOOGLE_ID, GOOGLE_SECRET } = require('@configuration');
 const Student = require('@models/student');
 const Company = require('@models/company');
@@ -99,23 +101,27 @@ passport.use('googleToken-student', new GooglePlusTokenStrategy({
 passport.use('local-student', new LocalStrategy({
     usernameField: 'email'
 }, async(email, password, done) => {
-    try {
-        const student = await Student.findOne({ 'credentials.email': email });
-
-        if (!student) {
-            return done(null, false);
-        }
-
-        const isMatch = await student.credentials.isValidPassword(password);
-
-        if (!isMatch) {
-            return done(null, false);
-        }
-
-        return done(null, student);
-    } catch(error) {
-        return done(error, false);
+    var err, student;
+    [err, student] = await to(
+        Student.findOne({
+            'credentials.email': email
+        })
+        .select('+credentials.password')
+    );
+    if (err) {
+        return done(err, false);
     }
+    if (!student) {
+        return done(null, false);
+    }
+
+    const isMatch = await student.credentials.isValidPassword(password);
+
+    if (!isMatch) {
+        return done(null, false);
+    }
+
+    return done(null, student);
 }));
 
 // *************************** Company Passport **************************
@@ -187,21 +193,25 @@ passport.use('googleToken-company', new GooglePlusTokenStrategy({
 passport.use('local-company', new LocalStrategy({
     usernameField: 'email'
 }, async(email, password, done) => {
-    try {
-        const company = await Company.findOne({ 'credentials.email': email });
-
-        if (!company) {
-            return done(null, false);
-        }
-
-        const isMatch = await company.credentials.isValidPassword(password);
-
-        if (!isMatch) {
-            return done(null, false);
-        }
-
-        return done(null, company);
-    } catch(error) {
-        return done(error, false);
+    var err, company;
+    [err, company] = await to(
+        Company.findOne({
+            'credentials.email': email
+        })
+        .select('+credentials.password')
+    );
+    if (err) {
+        return done(err, false);
     }
+    if (!company) {
+        return done(null, false);
+    }
+
+    const isMatch = await company.credentials.isValidPassword(password);
+
+    if (!isMatch) {
+        return done(null, false);
+    }
+
+    return done(null, company);
 }));

@@ -51,20 +51,20 @@ router.use('/auth', authRouter);
 
 // *************************  All Getters and Setters ***********************
 
-privateRouter.use(passport.authorize('jwt-company', {session: false}));
+privateRouter.use(passport.authenticate('jwt-company', {session: false}));
 
 // Update company name and get company name by id.
 privateRouter.route('/name')
-    .post(ProfileController.companyUpdateName)
+    .put(ProfileController.companyUpdateName)
     .get(ProfileController.companyGetName);
 
 // .. so on ...
 privateRouter.route('/phone')
-    .post(ProfileController.companyUpdatePhone)
+    .put(ProfileController.companyUpdatePhone)
     .get(ProfileController.companyGetPhone);
 
 privateRouter.route('/description')
-    .post(ProfileController.companyUpdateDescription)
+    .put(ProfileController.companyUpdateDescription)
     .get(ProfileController.companyGetDescription);
 
 // get full profile information.
