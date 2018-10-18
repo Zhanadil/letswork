@@ -86,7 +86,7 @@ module.exports = {
         }
 
         var questionText = req.body.questions.join(String.fromCharCode(28));
-        
+
         // Записываем вопрос
         questionSet.questions[questionIndex] = {
             questionNumber: req.body.questionNumber,
@@ -155,7 +155,8 @@ module.exports = {
     // /POST /admin/questionnaire/set/create
     // req.body: {
     //      setNumber: Number,
-    //      setName: String
+    //      setName: String,
+    //      setType: String,
     // }
     createQuestionSet: async (req, res, next) => {
         var err, questionSet;
@@ -179,6 +180,7 @@ module.exports = {
         questionSet = await new Questionnaire.QuestionSet({
             setNumber: req.body.setNumber,
             setName: req.body.setName,
+            setType: req.body.setType,
         });
         await questionSet.save();
 
@@ -190,7 +192,8 @@ module.exports = {
     // /POST /admin/questionnaire/set/update
     // req.body: {
     //      setNumber: Number,
-    //      setName: String
+    //      setName: String,
+    //      setType: String,
     // }
     updateQuestionSet: async (req, res, next) => {
         var err, questionSet;
@@ -211,7 +214,12 @@ module.exports = {
         }
 
         // Изменяем название сета
-        questionSet.setName = req.body.setName;
+        if (req.body.setName) {
+            questionSet.setName = req.body.setName;
+        }
+        if (req.body.setType) {
+            questionSet.setType = req.body.setType;
+        }
         await questionSet.save();
 
         return res.status(200).json({ status: "ok" });

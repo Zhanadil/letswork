@@ -89,13 +89,19 @@ const updateBelbinQuestionSchema = joi.object().keys({
 const createQuestionSetSchema = joi.object().keys({
     setNumber: joi.number().min(0).required(),
     setName: joi.string().required(),
+    setType: joi.string().required(),
 });
 const deleteQuestionSetSchema = joi.object().keys({
     setNumber: joi.number().min(0).required(),
 });
 const updateQuestionSetSchema = joi.object().keys({
     setNumber: joi.number().min(0).required(),
-    setName: joi.string().required(),
+    setName: joi.string(),
+    setType: joi.string().valid(
+        // Берет все типы вопросов со схемы вопросника в базе данных
+        // QuestionSet('setType').enumValues
+        Questionnaire.QuestionSet.schema.paths.setType.enumValues
+    ),
 });
 
 module.exports = {
