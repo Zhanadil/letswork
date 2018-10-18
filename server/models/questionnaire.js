@@ -16,6 +16,10 @@ const questionSetSchema = mongoose.Schema({
         default: "Тест"
     },
     setNumber: Number,
+    setType: {
+        type: String,
+        enum: ['belbin', 'general'],
+    },
     questions: [{
         questionNumber: Number,
         questionText: String,
