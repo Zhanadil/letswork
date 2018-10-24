@@ -215,7 +215,35 @@ describe('Student post requests', () => {
                         done();
                     });
             });
-        })
+        });
+
+        describe('get conversations', () => {
+            it('should not get conversations without token', (done) => {
+                chai.request(server)
+                    .get(`/student/chat/conversations`)
+                    .end((err, res) => {
+                        expect(err).to.be.null;
+                        res.should.have.status(401);
+                        res.should.have.property('text');
+                        res.text.should.be.eql('Unauthorized');
+                        done();
+                    });
+            });
+
+            it('should get conversations with correct token', (done) => {
+                chai.request(server)
+                    .get(`/student/chat/conversations`)
+                    .set('Authorization', studentToken)
+                    .end((err, res) => {
+                        expect(err).to.be.null;
+                        res.should.have.status(200);
+                        res.body.should.have.property('conversations');
+                        res.body.conversations.length.should.be.equal(1);
+                        res.body.conversations[0]._id.should.be.equal(conversationId);
+                        done();
+                    });
+            });
+        });
     });
 
     after(async () => {

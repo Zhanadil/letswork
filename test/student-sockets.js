@@ -15,7 +15,7 @@ const server = require('@root/app');
 const faker = require('faker');
 const chai = require('chai');
 const io = require('socket.io-client');
-const chaiAsPromised = require('chai-as-promised');
+// const chaiAsPromised = require('chai-as-promised');
 const should = chai.should();
 
 const expect = chai.expect;
@@ -232,7 +232,6 @@ describe('student socket tests', () => {
 
         it('should create conversation after first private message', (done) => {
             const studentClient2 = io.connect(socketURL);
-            const companyClient2 = io.connect(socketURL);
 
             const sentMessage = {
                 messageType: 'text',
@@ -241,18 +240,15 @@ describe('student socket tests', () => {
                 timeSent: Date.now(),
             };
 
-            const receivedMessage = {
-                messageType: 'text',
-                authorId: studentId2,
-                text: sentMessage.text,
-            };
+            studentClient2.on('connect', function() {
+                studentClient2.emit('authentication', { token: studentToken2 });
 
-            const checkPrivateMessage = function(client) {
-                client.on('chat_message', function(msg) {
-                    msg.should.deep.include(receivedMessage);
-                    expect(new Date(msg.timeSent).getDate()).to.equal(new Date(sentMessage.timeSent).getDate());
-                    // Получатель должен быть только компанией один
-                    client.should.equal(companyClient2);
+                // Студент отправляет сообщение после того как компания
+                // подсоединилась.
+                studentClient2.emit('chat_message', sentMessage, (returnMessage) => {
+                    returnMessage.should.deep.equal({
+                        status: "ok"
+                    });
 
                     Conversation.findOne({
                         companyId: companyId2,
@@ -263,32 +259,42 @@ describe('student socket tests', () => {
                         conversationId = conversation.id;
 
                         studentClient2.disconnect();
-                        companyClient2.disconnect();
                         done();
                     })
                 });
-            }
+            });
+        });
+
+        it('should update lastMessage in Conversation', (done) => {
+            const studentClient2 = io.connect(socketURL);
+
+            const sentMessage = {
+                messageType: 'text',
+                conversationId,
+                text: "test last-message update",
+                timeSent: Date.now(),
+            };
 
             studentClient2.on('connect', function() {
                 studentClient2.emit('authentication', { token: studentToken2 });
 
-                checkPrivateMessage(studentClient2);
+                // Отправляем сообщение
+                studentClient2.emit('chat_message', sentMessage, (returnMessage) => {
+                    returnMessage.should.deep.equal({
+                        status: "ok"
+                    });
 
-                companyClient2.on('connect', function() {
-                    companyClient2.emit('authentication', { token: companyToken2 });
-
-                    checkPrivateMessage(companyClient2);
-
-                    // Студент отправляет сообщение после того как компания
-                    // подсоединилась.
-                    studentClient2.emit('chat_message', sentMessage, (returnMessage) => {
-                        returnMessage.should.deep.equal({
-                            status: "ok"
-                        });
+                    // Проверяем изменилось-ли последнее сообщение в чате
+                    Conversation.findById(conversationId, (err, conversation) => {
+                        expect(err).to.be.null;
+                        expect(conversation.lastMessage.text).to.be.equal(sentMessage.text);
+                        studentClient2.disconnect();
+                        done();
                     });
                 });
             });
         });
+
 
         it('should not send private text message to anyone except receiver via conversationid', (done) => {
             const studentClient = io.connect(socketURL);

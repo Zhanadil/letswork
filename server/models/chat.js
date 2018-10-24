@@ -1,10 +1,5 @@
 const mongoose = require('mongoose');
 
-const conversationSchema = mongoose.Schema({
-    companyId: String,
-    studentId: String,
-});
-
 const messageSchema = mongoose.Schema({
     authorId: String,
     authorType: {
@@ -21,6 +16,12 @@ const messageSchema = mongoose.Schema({
         type: Date,
         default: Date.now,
     },
+});
+
+const conversationSchema = mongoose.Schema({
+    companyId: String,
+    studentId: String,
+    lastMessage: messageSchema,
 });
 
 const Message = mongoose.model('message', messageSchema);

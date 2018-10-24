@@ -162,6 +162,8 @@ chatRouter.get('/last-message/:conversationId', ChatController.studentGetLastCha
 
 chatRouter.get('/:conversationId/:cursor/:limit', ChatController.studentGetChat);
 
+chatRouter.get('/conversations', ChatController.studentConversations);
+
 router.use('/chat', chatRouter);
 
 module.exports = router;
