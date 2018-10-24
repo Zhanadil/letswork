@@ -158,6 +158,8 @@ router.use('/questionnaire', questionnaireRouter);
 
 chatRouter.use(passport.authorize('jwt-student', { session: false }));
 
+chatRouter.get('/last-message/:conversationId', ChatController.studentGetLastChatMessage);
+
 chatRouter.get('/:conversationId/:cursor/:limit', ChatController.studentGetChat);
 
 router.use('/chat', chatRouter);
