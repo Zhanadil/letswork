@@ -99,4 +99,24 @@ module.exports = {
             message
         });
     },
+
+    // Контроллер возвращает последнее сообщение в чате
+    //
+    // GET /student/chat/conversations
+    studentConversations: async (req, res, next) => {
+        // Находим все чаты
+        var [err, conversations] = await to(
+            Conversation.find({ studentId: req.account.id })
+                .sort({ 'lastMessage.timeSent': -1 })
+        );
+        if (err) {
+            return res.status(500).json({
+                error: err.message
+            });
+        }
+
+        return res.status(200).json({
+            conversations
+        });
+    },
 };

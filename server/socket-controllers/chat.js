@@ -118,6 +118,18 @@ const onReceiveMessage = (socket, data) => {
             return;
         }
 
+        conversation.lastMessage = chatMessage;
+        [err, conversation] = await to(
+            conversation.save()
+        );
+        if (err) {
+            returnCall({
+                status: 'error',
+                message: err.message,
+            });
+            return;
+        }
+
         // Находим тип и айди получателя
         var receiverType;
         if (data.userType === 'company') {
