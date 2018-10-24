@@ -1,12 +1,17 @@
 const mongoose = require('mongoose');
 
+const conversationSchema = mongoose.Schema({
+    companyId: String,
+    studentId: String,
+});
+
 const messageSchema = mongoose.Schema({
     authorId: String,
     authorType: {
         type: String,
         enum: ['student', 'company'],
     },
-    receiverId: String,
+    conversationId: String,
     messageType: {
         type: String,
         enum: ['text'],
@@ -19,5 +24,9 @@ const messageSchema = mongoose.Schema({
 });
 
 const Message = mongoose.model('message', messageSchema);
+const Conversation = mongoose.model('conversation', conversationSchema);
 
-module.exports = Message;
+module.exports = {
+    Message,
+    Conversation,
+};

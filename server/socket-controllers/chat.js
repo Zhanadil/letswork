@@ -4,13 +4,14 @@ const to = require('await-to-js').default;
 
 const Student = require('@models/student');
 const Company = require('@models/company');
-const Message = require('@models/message');
+const { Conversation, Message } = require('@models/chat');
 
 const helpers = require('@socket-controllers/helpers');
 
 const onReceiveMessage = (socket, data) => {
     // Контроль получения сообщений
     // {
+    //     conversationId: String,
     //     receiverId: String,
     //     messageType: enum('text', 'image', 'document'),
     //     text: String,
@@ -28,47 +29,83 @@ const onReceiveMessage = (socket, data) => {
             return;
         }
 
-        // Тип получателя это обратное типа отправителя
-        // Нужно для того, чтобы узнать комнату получателя
-        var receiverType;
-        if (data.userType === 'company') {
-            receiverType = 'student';
-        } else if (data.userType === 'student') {
-            receiverType = 'company';
+        // Проверка на существование чата по айди
+        var err, conversation = null;
+        if (message.conversationId) {
+            [err, conversation] = await to(
+                Conversation.findById(message.conversationId)
+            );
+            if (err) {
+                returnCall({
+                    status: 'error',
+                    message: err.message
+                });
+                return;
+            }
         }
 
-        // Проверка айди получателя на действительность
-        const receiverId = message.receiverId;
-        if (receiverType === 'student') {
-            var [err] = await to(
-                Student.findById(receiverId)
+        // Если не нашли чат по айди
+        if (!conversation) {
+            // Если айди получателя не указан, то возвращаем ошибку
+            if (!message.receiverId) {
+                returnCall({
+                    status: 'error',
+                    message: 'conversation not found',
+                });
+                return;
+            }
+
+            var companyId, studentId;
+            if (data.userType === 'company') {
+                companyId = data.userId;
+                studentId = message.receiverId;
+            } else {
+                companyId = message.receiverId;
+                studentId = data.userId;
+            }
+
+            // Находим чат по собеседникам
+            [err, conversation] = await to(
+                Conversation.findOne({
+                    companyId,
+                    studentId,
+                })
             );
             if (err) {
                 returnCall({
                     status: 'error',
-                    message: 'incorrect receiver id',
+                    message: err.message,
                 });
                 return;
             }
-        } else if (receiverType === 'company') {
-            var [err] = await to(
-                Company.findById(receiverId)
-            );
-            if (err) {
-                returnCall({
-                    status: 'error',
-                    message: 'incorrect receiver id',
-                });
-                return;
+
+            // Если не нашли и так, то создаем новый
+            if (!conversation) {
+                [err, conversation] = await to(
+                    new Conversation({
+                        companyId,
+                        studentId
+                    }).save()
+                );
+                if (err) {
+                    returnCall({
+                        status: 'error',
+                        message: err.message,
+                    });
+                    return;
+                }
             }
+
+            message.conversationId = conversation.id;
         }
 
         // Добавляем сообщение в базу данных
         var [err, chatMessage] = await to(
             new Message({
+                messageType: message.messageType,
                 authorId: data.userId,
                 authorType: data.userType,
-                receiverId: message.receiverId,
+                conversationId: message.conversationId,
                 text: message.text,
                 timeSent: message.timeSent,
             }).save()
@@ -81,13 +118,23 @@ const onReceiveMessage = (socket, data) => {
             return;
         }
 
+        // Находим тип и айди получателя
+        var receiverType;
+        if (data.userType === 'company') {
+            receiverType = 'student';
+        } else if (data.userType === 'student') {
+            receiverType = 'company';
+        }
+
+        var receiverId;
+        if (receiverType === 'student') {
+            receiverId = conversation.studentId;
+        } else if (receiverType === 'company') {
+            receiverId = conversation.companyId;
+        }
+
         // Отправляем сообщение в комнату получателя
-        socket.in(receiverType + receiverId).emit('chat_message', {
-            messageType: message.messageType,
-            authorId: data.userId,
-            text: message.text,
-            timeSent: message.timeSent,
-        });
+        socket.in(receiverType + receiverId).emit('chat_message', chatMessage);
 
         returnCall({ status: 'ok' });
     });
