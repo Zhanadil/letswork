@@ -4,6 +4,7 @@ const config = require('config');
 const mongoose = require("mongoose");
 const Company = require('@models/company');
 const Student = require('@models/student');
+const { Message, Conversation } = require('@models/chat');
 const JWT = require('jsonwebtoken');
 const { JWT_SECRET } = require('@configuration');
 const { signToken } = require('@controllers/helpers');
@@ -156,7 +157,9 @@ describe('student socket tests', () => {
     });
 
     describe('chat', () => {
-        it('should send private text message', (done) => {
+        var conversationId;
+
+        it('should not send private text message to anyone except receiver via receiverid', (done) => {
             const studentClient = io.connect(socketURL);
             const studentClient2 = io.connect(socketURL);
             const companyClient = io.connect(socketURL);
@@ -173,7 +176,6 @@ describe('student socket tests', () => {
                 messageType: 'text',
                 authorId: studentId,
                 text: sentMessage.text,
-                timeSent: sentMessage.timeSent,
             };
 
             const completeTest = function() {
@@ -186,7 +188,8 @@ describe('student socket tests', () => {
 
             const checkPrivateMessage = function(client) {
                 client.on('chat_message', function(msg) {
-                    msg.should.deep.equal(receivedMessage);
+                    msg.should.deep.include(receivedMessage);
+                    expect(new Date(msg.timeSent).getDate()).to.equal(new Date(sentMessage.timeSent).getDate());
                     // Получатель должен быть только компанией один
                     client.should.equal(companyClient);
                     // Даем лишнее время, чтобы ошибочные сообщения успели придти
@@ -219,6 +222,137 @@ describe('student socket tests', () => {
                     // Студент отправляет сообщение после того как компания
                     // подсоединилась.
                     studentClient.emit('chat_message', sentMessage, (returnMessage) => {
+                        returnMessage.should.deep.equal({
+                            status: "ok"
+                        });
+                    });
+                });
+    		});
+        });
+
+        it('should create conversation after first private message', (done) => {
+            const studentClient2 = io.connect(socketURL);
+            const companyClient2 = io.connect(socketURL);
+
+            const sentMessage = {
+                messageType: 'text',
+                receiverId: companyId2,
+                text: "test message 2",
+                timeSent: Date.now(),
+            };
+
+            const receivedMessage = {
+                messageType: 'text',
+                authorId: studentId2,
+                text: sentMessage.text,
+            };
+
+            const checkPrivateMessage = function(client) {
+                client.on('chat_message', function(msg) {
+                    msg.should.deep.include(receivedMessage);
+                    expect(new Date(msg.timeSent).getDate()).to.equal(new Date(sentMessage.timeSent).getDate());
+                    // Получатель должен быть только компанией один
+                    client.should.equal(companyClient2);
+
+                    Conversation.findOne({
+                        companyId: companyId2,
+                        studentId: studentId2,
+                    }, (err, conversation) => {
+                        expect(err).to.be.null;
+                        expect(conversation).not.to.be.null;
+                        conversationId = conversation.id;
+
+                        studentClient2.disconnect();
+                        companyClient2.disconnect();
+                        done();
+                    })
+                });
+            }
+
+            studentClient2.on('connect', function() {
+                studentClient2.emit('authentication', { token: studentToken2 });
+
+                checkPrivateMessage(studentClient2);
+
+                companyClient2.on('connect', function() {
+                    companyClient2.emit('authentication', { token: companyToken2 });
+
+                    checkPrivateMessage(companyClient2);
+
+                    // Студент отправляет сообщение после того как компания
+                    // подсоединилась.
+                    studentClient2.emit('chat_message', sentMessage, (returnMessage) => {
+                        returnMessage.should.deep.equal({
+                            status: "ok"
+                        });
+                    });
+                });
+            });
+        });
+
+        it('should not send private text message to anyone except receiver via conversationid', (done) => {
+            const studentClient = io.connect(socketURL);
+            const studentClient2 = io.connect(socketURL);
+            const companyClient = io.connect(socketURL);
+            const companyClient2 = io.connect(socketURL);
+
+            const sentMessage = {
+                messageType: 'text',
+                conversationId,
+                text: "test message 3",
+                timeSent: Date.now(),
+            };
+
+            const receivedMessage = {
+                messageType: 'text',
+                authorId: studentId2,
+                text: sentMessage.text,
+            };
+
+            const completeTest = function() {
+                studentClient.disconnect();
+                studentClient2.disconnect();
+                companyClient.disconnect();
+                companyClient2.disconnect();
+                done();
+            }
+
+            const checkPrivateMessage = function(client) {
+                client.on('chat_message', function(msg) {
+                    msg.should.deep.include(receivedMessage);
+                    expect(new Date(msg.timeSent).getDate()).to.equal(new Date(sentMessage.timeSent).getDate());
+                    // Получатель должен быть только компанией один
+                    client.should.equal(companyClient2);
+                    // Даем лишнее время, чтобы ошибочные сообщения успели придти
+                    setTimeout(completeTest, 40);
+                });
+            }
+
+            studentClient.on('connect', function() {
+                studentClient.emit('authentication', { token: studentToken });
+
+                checkPrivateMessage(studentClient);
+
+                studentClient2.on('connect', function() {
+                    studentClient2.emit('authentication', { token: studentToken2 });
+
+                    checkPrivateMessage(studentClient2);
+                });
+
+                companyClient.on('connect', function() {
+                    companyClient.emit('authentication', { token: companyToken });
+
+                    checkPrivateMessage(companyClient);
+                });
+
+                companyClient2.on('connect', function() {
+                    companyClient2.emit('authentication', { token: companyToken2 });
+
+                    checkPrivateMessage(companyClient2);
+
+                    // Студент отправляет сообщение после того как компания
+                    // подсоединилась.
+                    studentClient2.emit('chat_message', sentMessage, (returnMessage) => {
                         returnMessage.should.deep.equal({
                             status: "ok"
                         });

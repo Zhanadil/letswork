@@ -6,6 +6,7 @@ const authRouter = express.Router();
 const privateRouter = express.Router();
 const vacancyRouter = express.Router();
 const questionnaireRouter = express.Router();
+const chatRouter = express.Router();
 
 const passport = require('passport');
 const passportConfig = require('@root/passport');
@@ -14,6 +15,7 @@ const { validateBody, schemas } = require('@routes/helpers');
 const AuthController = require('@controllers/auth');
 const ProfileController = require('@controllers/profile');
 const VacancyController = require('@controllers/vacancy');
+const ChatController = require('@controllers/chat');
 
 // ***********  All student authorization related requests  *****************
 
@@ -151,5 +153,13 @@ questionnaireRouter.get('/all-question-sets',
     ProfileController.studentGetAllQuestionSets);
 
 router.use('/questionnaire', questionnaireRouter);
+
+// ******************************** Chat **************************************
+
+chatRouter.use(passport.authorize('jwt-student', { session: false }));
+
+chatRouter.get('/:conversationId/:cursor/:limit', ChatController.studentGetChat);
+
+router.use('/chat', chatRouter);
 
 module.exports = router;

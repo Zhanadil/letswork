@@ -1,10 +1,11 @@
 const joi = require('joi');
 
-const Message = require('@models/message');
+const { Message } = require('@models/chat');
 
 // Валидация отправки сообщений в чате
 const receiveMessageSchema = joi.object().keys({
-    receiverId: joi.string().required(),
+    conversationId: joi.string(),
+    receiverId: joi.string(),
     messageType: joi.string().valid(
         Message.schema.paths.messageType.enumValues
     ).required(),
