@@ -101,37 +101,6 @@ describe('student socket tests', () => {
     });
 
     describe('connection', () => {
-        it('should not connect without token', (done) => {
-            const client = io.connect(socketURL);
-
-            client.on('connect', function() {
-                client.on('authenticated', function() {
-                    // Возвращаем ошибку, как только он смог авторизироваться
-    				expect(0, 1);
-    			});
-    		});
-            client.on('disconnect', function() {
-                done();
-            })
-        });
-
-        it('should not connect with fake token', (done) => {
-            const client = io.connect(socketURL);
-
-            client.on('connect', function() {
-                client.on('authenticated', function() {
-                    // Возвращаем ошибку, как только он смог авторизироваться
-    				expect(0, 1);
-    			});
-    			client.on('unauthorized', function() {
-                    client.disconnect();
-					done();
-				});
-
-                client.emit('authentication', { token: "asd" });
-            });
-        });
-
         it('should connect with correct token', (done) => {
             const client = io.connect(socketURL);
             var didConnect = false;
@@ -147,7 +116,7 @@ describe('student socket tests', () => {
     				expect(0, 1);
 				});
 
-                client.emit('authentication', { token: studentToken });
+                client.emit('authentication', { token: companyToken });
             });
             client.on('disconnect', function() {
                 expect(didConnect).to.be.true;
@@ -166,14 +135,14 @@ describe('student socket tests', () => {
 
             const sentMessage = {
                 messageType: 'text',
-                receiverId: companyId,
+                receiverId: studentId,
                 text: "test message",
                 timeSent: Date.now(),
             };
 
             const receivedMessage = {
                 messageType: 'text',
-                authorId: studentId,
+                authorId: companyId,
                 text: sentMessage.text,
             };
 
@@ -189,8 +158,8 @@ describe('student socket tests', () => {
                 client.on('chat_message', function(msg) {
                     msg.should.deep.include(receivedMessage);
                     expect(new Date(msg.timeSent).getDate()).to.equal(new Date(sentMessage.timeSent).getDate());
-                    // Получатель должен быть только компанией один
-                    client.should.equal(companyClient);
+                    // Получатель должен быть только студентом один
+                    client.should.equal(studentClient);
                     // Даем лишнее время, чтобы ошибочные сообщения успели придти
                     setTimeout(completeTest, 40);
                 });
@@ -218,11 +187,11 @@ describe('student socket tests', () => {
 
                     checkPrivateMessage(companyClient);
 
-                    // Студент отправляет сообщение после того как компания
-                    // подсоединилась.
-                    studentClient.emit('chat_message', sentMessage, (returnMessage) => {
-                        returnMessage.should.deep.equal({
-                            status: "ok"
+                    companyClient.on('authenticated', function() {
+                        companyClient.emit('chat_message', sentMessage, (returnMessage) => {
+                            returnMessage.should.deep.equal({
+                                status: "ok"
+                            });
                         });
                     });
                 });
@@ -230,37 +199,37 @@ describe('student socket tests', () => {
         });
 
         it('should create conversation after first private message', (done) => {
-            const studentClient2 = io.connect(socketURL);
+            const companyClient2 = io.connect(socketURL);
 
             const sentMessage = {
                 messageType: 'text',
-                receiverId: companyId2,
+                receiverId: studentId2,
                 text: "test message 2",
                 timeSent: Date.now(),
             };
 
-            studentClient2.on('connect', function() {
-                studentClient2.emit('authentication', { token: studentToken2 });
+            companyClient2.on('connect', function() {
+                companyClient2.emit('authentication', { token: companyToken2 });
 
-                // Студент отправляет сообщение после того как компания
-                // подсоединилась.
-                studentClient2.emit('chat_message', sentMessage, (returnMessage) => {
-                    returnMessage.should.deep.equal({
-                        status: "ok"
+                companyClient2.on('authenticated', function() {
+                    companyClient2.emit('chat_message', sentMessage, (returnMessage) => {
+                        returnMessage.should.deep.equal({
+                            status: "ok"
+                        });
+
+                        Conversation.findOne({
+                            companyId: companyId2,
+                            studentId: studentId2,
+                        }, (err, conversation) => {
+                            expect(err).to.be.null;
+                            expect(conversation).not.to.be.null;
+                            conversationId = conversation.id;
+
+                            companyClient2.disconnect();
+                            done();
+                        })
                     });
-
-                    Conversation.findOne({
-                        companyId: companyId2,
-                        studentId: studentId2,
-                    }, (err, conversation) => {
-                        expect(err).to.be.null;
-                        expect(conversation).not.to.be.null;
-                        conversationId = conversation.id;
-
-                        studentClient2.disconnect();
-                        done();
-                    })
-                });
+                })
             });
         });
 
@@ -310,7 +279,7 @@ describe('student socket tests', () => {
 
             const receivedMessage = {
                 messageType: 'text',
-                authorId: studentId2,
+                authorId: companyId2,
                 text: sentMessage.text,
             };
 
@@ -326,8 +295,8 @@ describe('student socket tests', () => {
                 client.on('chat_message', function(msg) {
                     msg.should.deep.include(receivedMessage);
                     expect(new Date(msg.timeSent).getDate()).to.equal(new Date(sentMessage.timeSent).getDate());
-                    // Получатель должен быть только компанией один
-                    client.should.equal(companyClient2);
+                    // Получатель должен быть только студентом один
+                    client.should.equal(studentClient2);
                     // Даем лишнее время, чтобы ошибочные сообщения успели придти
                     setTimeout(completeTest, 40);
                 });
@@ -355,11 +324,11 @@ describe('student socket tests', () => {
 
                     checkPrivateMessage(companyClient2);
 
-                    // Студент отправляет сообщение после того как компания
-                    // подсоединилась.
-                    studentClient2.emit('chat_message', sentMessage, (returnMessage) => {
-                        returnMessage.should.deep.equal({
-                            status: "ok"
+                    companyClient2.on('authenticated', function() {
+                        companyClient2.emit('chat_message', sentMessage, (returnMessage) => {
+                            returnMessage.should.deep.equal({
+                                status: "ok"
+                            });
                         });
                     });
                 });

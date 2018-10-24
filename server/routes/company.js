@@ -6,6 +6,7 @@ const router = express.Router();
 const authRouter = express.Router();
 const privateRouter = express.Router();
 const vacancyRouter = express.Router();
+const chatRouter = express.Router();
 
 const passport = require('passport');
 const passportConfig = require('@root/passport');
@@ -14,6 +15,7 @@ const { validateBody, schemas } = require('@routes/helpers');
 const AuthController = require('@controllers/auth');
 const ProfileController = require('@controllers/profile');
 const VacancyController = require('@controllers/vacancy');
+const ChatController = require('@controllers/chat');
 
 // **************  All company authorization related requests ****************
 
@@ -130,5 +132,17 @@ vacancyRouter.route('/getApplications')
     .post(VacancyController.getCompanyApplications);
 
 router.use('/vacancy', vacancyRouter);
+
+// ******************************** Chat **************************************
+
+chatRouter.use(passport.authorize('jwt-company', { session: false }));
+
+chatRouter.get('/last-message/:conversationId', ChatController.companyGetLastChatMessage);
+
+chatRouter.get('/:conversationId/:cursor/:limit', ChatController.companyGetChat);
+
+chatRouter.get('/conversations', ChatController.companyConversations);
+
+router.use('/chat', chatRouter);
 
 module.exports = router;
