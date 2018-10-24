@@ -82,7 +82,7 @@ module.exports = {
             });
         }
 
-        // Если последнее сообщение указано, то меняем фильтр
+        // Находим последнее сообщение в чате
         var message;
         [err, message] = await to(
             Message.findOne({
