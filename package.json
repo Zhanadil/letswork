@@ -30,6 +30,8 @@
     "passport-google-plus-token": "^2.1.0",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
+    "socket.io": "^2.1.1",
+    "socketio-auth": "^0.1.1",
     "winston": "^3.0.0"
   },
   "scripts": {
@@ -42,6 +44,7 @@
     "@helpers": "server/helpers",
     "@routes": "server/routes",
     "@controllers": "server/controllers",
+    "@socket-controllers": "server/socket-controllers",
     "@configuration": "server/configuration",
     "@root": "server",
     "@project_root": ".",
