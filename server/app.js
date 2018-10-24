@@ -8,13 +8,19 @@ const path = require('path');
 const fileUpload = require('express-fileupload');
 const cors = require('cors');
 const JWT = require('jsonwebtoken');
-const { JWT_SECRET } = require('@configuration');
+const http = require('http');
+
+const app = express();
+const server = http.createServer(app);
+require('@root/socket')(server);
 
 const logger = require('@root/logger');
 const adminRouter = require('@routes/admin');
 const studentRouter = require('@routes/student');
 const companyRouter = require('@routes/company');
 const generalRouter = require('@routes/general');
+
+const { JWT_SECRET } = require('@configuration');
 
 mongoose.Promise = global.Promise;
 var connectionOptions = {
@@ -23,9 +29,9 @@ var connectionOptions = {
     },
     useNewUrlParser: true
 };
-// if (config.util.getEnv('NODE_ENV') !== 'prod') {
-//     connectionOptions.auth = undefined;
-// }
+if (config.util.getEnv('NODE_ENV') !== 'prod') {
+    connectionOptions.auth = undefined;
+}
 mongoose.connect(
     config.DBHost,
     connectionOptions,
@@ -38,8 +44,6 @@ mongoose.connect(
         }
     }
 )
-
-const app = express();
 
 app.use(body_parser.json());
 app.use(fileUpload());
@@ -70,4 +74,4 @@ app.use('/student', studentRouter);
 app.use('/company', companyRouter);
 app.use('/', generalRouter);
 
-module.exports = app;
+module.exports = server;
