@@ -156,19 +156,21 @@ describe('student socket tests', () => {
     });
 
     describe('chat', () => {
-        it('should send private message', (done) => {
+        it('should send private text message', (done) => {
             const studentClient = io.connect(socketURL);
             const studentClient2 = io.connect(socketURL);
             const companyClient = io.connect(socketURL);
             const companyClient2 = io.connect(socketURL);
 
             const sentMessage = {
+                messageType: 'text',
                 receiverId: companyId,
                 text: "test message",
                 timeSent: Date.now(),
             };
 
             const receivedMessage = {
+                messageType: 'text',
                 authorId: studentId,
                 text: sentMessage.text,
                 timeSent: sentMessage.timeSent,

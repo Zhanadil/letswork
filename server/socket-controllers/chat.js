@@ -6,22 +6,24 @@ const Student = require('@models/student');
 const Company = require('@models/company');
 const Message = require('@models/message');
 
+const helpers = require('@socket-controllers/helpers');
+
 const onReceiveMessage = (socket, data) => {
+    // Контроль получения сообщений
+    // {
+    //     receiverId: String,
+    //     messageType: enum('text', 'image', 'document'),
+    //     text: String,
+    //     timeSent: Date,
+    // }
     socket.on('chat_message', async (message, returnCall) => {
-        // Добавляем сообщение в базу данных
-        var [err, chatMessage] = await to(
-            new Message({
-                authorId: data.userId,
-                authorType: data.userType,
-                receiverId: message.receiverId,
-                text: message.text,
-                timeSent: message.timeSent,
-            }).save()
-        );
-        if (err) {
+        // Валидация входных данных
+        const validateResult =
+            helpers.validateBody(helpers.receiveMessageSchema, message);
+        if (validateResult) {
             returnCall({
                 status: 'error',
-                message: err.message,
+                message: validateResult,
             });
             return;
         }
@@ -35,6 +37,7 @@ const onReceiveMessage = (socket, data) => {
             receiverType = 'company';
         }
 
+        // Проверка айди получателя на действительность
         const receiverId = message.receiverId;
         if (receiverType === 'student') {
             var [err] = await to(
@@ -60,8 +63,27 @@ const onReceiveMessage = (socket, data) => {
             }
         }
 
+        // Добавляем сообщение в базу данных
+        var [err, chatMessage] = await to(
+            new Message({
+                authorId: data.userId,
+                authorType: data.userType,
+                receiverId: message.receiverId,
+                text: message.text,
+                timeSent: message.timeSent,
+            }).save()
+        );
+        if (err) {
+            returnCall({
+                status: 'error',
+                message: err.message,
+            });
+            return;
+        }
+
         // Отправляем сообщение в комнату получателя
         socket.in(receiverType + receiverId).emit('chat_message', {
+            messageType: message.messageType,
             authorId: data.userId,
             text: message.text,
             timeSent: message.timeSent,

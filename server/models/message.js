@@ -7,6 +7,10 @@ const messageSchema = mongoose.Schema({
         enum: ['student', 'company'],
     },
     receiverId: String,
+    messageType: {
+        type: String,
+        enum: ['text'],
+    },
     text: String,
     timeSent: {
         type: Date,
