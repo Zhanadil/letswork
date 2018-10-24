@@ -14,13 +14,11 @@ const { signToken } = require('@controllers/helpers');
 const faker = require('faker');
 const config = require('config');
 const chai = require('chai');
-// const chaiAsPromised = require('chai-as-promised');
 const chaiHttp = require('chai-http');
 const server = require('@root/app');
 const should = chai.should();
 
 chai.use(chaiHttp);
-// chai.use(chaiAsPromised);
 
 const expect = chai.expect;
 
@@ -179,6 +177,45 @@ describe('Student post requests', () => {
                     });
             });
         });
+
+        describe('get last-message', () => {
+            it('should not get chat messages without token', (done) => {
+                chai.request(server)
+                    .get(`/student/chat/last-message/${conversationId}`)
+                    .end((err, res) => {
+                        expect(err).to.be.null;
+                        res.should.have.status(401);
+                        res.should.have.property('text');
+                        res.text.should.be.eql('Unauthorized');
+                        done();
+                    });
+            });
+
+            it('should not get chat messages with another student\'s token', (done) => {
+                chai.request(server)
+                    .get(`/student/chat/last-message/${conversationId}`)
+                    .set('Authorization', studentToken2)
+                    .end((err, res) => {
+                        expect(err).to.be.null;
+                        res.should.have.status(403);
+                        res.body.error.should.be.eql('not authorized for this conversation');
+                        done();
+                    });
+            });
+
+            it('should get messages with correct token', (done) => {
+                chai.request(server)
+                    .get(`/student/chat/last-message/${conversationId}`)
+                    .set('Authorization', studentToken)
+                    .end((err, res) => {
+                        expect(err).to.be.null;
+                        res.should.have.status(200);
+                        res.body.should.have.property('message');
+                        res.body.message.text.should.be.equal('company2');
+                        done();
+                    });
+            });
+        })
     });
 
     after(async () => {
