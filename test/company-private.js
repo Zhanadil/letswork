@@ -22,31 +22,32 @@ chai.use(chaiHttp);
 
 const expect = chai.expect;
 
-describe('Student private requests', () => {
-    const newStudent = {
-        credentials: {
-            method: 'local',
-            email: faker.internet.email().toLowerCase(),
-            password: faker.internet.password()
-        }
-    };
-    const newStudent2 = {
-        credentials: {
-            method: 'local',
-            email: faker.internet.email().toLowerCase(),
-            password: faker.internet.password()
-        }
-    }
-    var studentToken, studentToken2;
-    var studentId, studentId2;
-
+describe('Company private requests', () => {
     const newCompany = {
+        credentials: {
+            method: 'local',
+            email: faker.internet.email().toLowerCase(),
+            password: faker.internet.password()
+        },
+        name: faker.company.companyName(),
+    };
+    const newCompany2 = {
+        credentials: {
+            method: 'local',
+            email: faker.internet.email().toLowerCase(),
+            password: faker.internet.password()
+        },
+        name: faker.company.companyName(),
+    }
+    var companyToken, companyId;
+    var companyToken2, companyId2;
+
+    const newStudent = {
         credentials: {
             method: 'local',
             email: faker.internet.email().toLowerCase(),
             password: faker.internet.password(),
         },
-        name: faker.company.companyName(),
     };
     var companyToken, companyId;
 
@@ -56,29 +57,29 @@ describe('Student private requests', () => {
         await mongoose.connect(config.DBHost, { useNewUrlParser: true });
         await mongoose.connection.dropDatabase()
 
-        // Создаем студентов
-        var [err, student] = await to(
-            new Student(newStudent).save()
-        );
-        expect(err).to.be.null;
-        studentToken = await signToken(student);
-        studentId = student.id;
-
-        [err, student] = await to(
-            new Student(newStudent2).save()
-        );
-        expect(err).to.be.null;
-        studentToken2 = await signToken(student);
-        studentId2 = student.id;
-
-        // Создаем компанию
-        var company;
-        [err, company] = await to(
+        // Создаем компании
+        var [err, company] = await to(
             new Company(newCompany).save()
         );
         expect(err).to.be.null;
         companyToken = await signToken(company);
         companyId = company.id;
+
+        [err, company] = await to(
+            new Company(newCompany2).save()
+        );
+        expect(err).to.be.null;
+        companyToken2 = await signToken(company);
+        companyId2 = company.id;
+
+        // Создаем студента
+        var student;
+        [err, student] = await to(
+            new Student(newStudent).save()
+        );
+        expect(err).to.be.null;
+        studentToken = await signToken(student);
+        studentId = student.id;
 
         // Создаем чат
         var conversation;
@@ -122,7 +123,7 @@ describe('Student private requests', () => {
         describe('get chat', () => {
             it('should not get chat messages without token', (done) => {
                 chai.request(server)
-                    .get(`/student/chat/${conversationId}/_/20`)
+                    .get(`/company/chat/${conversationId}/_/20`)
                     .end((err, res) => {
                         expect(err).to.be.null;
                         res.should.have.status(401);
@@ -132,10 +133,10 @@ describe('Student private requests', () => {
                     });
             });
 
-            it('should not get chat messages with another student\'s token', (done) => {
+            it('should not get chat messages with another company\'s token', (done) => {
                 chai.request(server)
-                    .get(`/student/chat/${conversationId}/_/20`)
-                    .set('Authorization', studentToken2)
+                    .get(`/company/chat/${conversationId}/_/20`)
+                    .set('Authorization', companyToken2)
                     .end((err, res) => {
                         expect(err).to.be.null;
                         res.should.have.status(403);
@@ -148,8 +149,8 @@ describe('Student private requests', () => {
 
             it('should get messages with correct token', (done) => {
                 chai.request(server)
-                    .get(`/student/chat/${conversationId}/_/2`)
-                    .set('Authorization', studentToken)
+                    .get(`/company/chat/${conversationId}/_/2`)
+                    .set('Authorization', companyToken)
                     .end((err, res) => {
                         expect(err).to.be.null;
                         res.should.have.status(200);
@@ -164,8 +165,8 @@ describe('Student private requests', () => {
 
             it('should get messages with cursor id', (done) => {
                 chai.request(server)
-                    .get(`/student/chat/${conversationId}/${cursorId}/3`)
-                    .set('Authorization', studentToken)
+                    .get(`/company/chat/${conversationId}/${cursorId}/3`)
+                    .set('Authorization', companyToken)
                     .end((err, res) => {
                         expect(err).to.be.null;
                         res.should.have.status(200);
@@ -181,7 +182,7 @@ describe('Student private requests', () => {
         describe('get last-message', () => {
             it('should not get chat messages without token', (done) => {
                 chai.request(server)
-                    .get(`/student/chat/last-message/${conversationId}`)
+                    .get(`/company/chat/last-message/${conversationId}`)
                     .end((err, res) => {
                         expect(err).to.be.null;
                         res.should.have.status(401);
@@ -191,10 +192,10 @@ describe('Student private requests', () => {
                     });
             });
 
-            it('should not get chat messages with another student\'s token', (done) => {
+            it('should not get chat messages with another company\'s token', (done) => {
                 chai.request(server)
-                    .get(`/student/chat/last-message/${conversationId}`)
-                    .set('Authorization', studentToken2)
+                    .get(`/company/chat/last-message/${conversationId}`)
+                    .set('Authorization', companyToken2)
                     .end((err, res) => {
                         expect(err).to.be.null;
                         res.should.have.status(403);
@@ -205,8 +206,8 @@ describe('Student private requests', () => {
 
             it('should get messages with correct token', (done) => {
                 chai.request(server)
-                    .get(`/student/chat/last-message/${conversationId}`)
-                    .set('Authorization', studentToken)
+                    .get(`/company/chat/last-message/${conversationId}`)
+                    .set('Authorization', companyToken)
                     .end((err, res) => {
                         expect(err).to.be.null;
                         res.should.have.status(200);
@@ -220,7 +221,7 @@ describe('Student private requests', () => {
         describe('get conversations', () => {
             it('should not get conversations without token', (done) => {
                 chai.request(server)
-                    .get(`/student/chat/conversations`)
+                    .get(`/company/chat/conversations`)
                     .end((err, res) => {
                         expect(err).to.be.null;
                         res.should.have.status(401);
@@ -232,8 +233,8 @@ describe('Student private requests', () => {
 
             it('should get conversations with correct token', (done) => {
                 chai.request(server)
-                    .get(`/student/chat/conversations`)
-                    .set('Authorization', studentToken)
+                    .get(`/company/chat/conversations`)
+                    .set('Authorization', companyToken)
                     .end((err, res) => {
                         expect(err).to.be.null;
                         res.should.have.status(200);

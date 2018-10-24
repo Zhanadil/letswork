@@ -6,7 +6,7 @@ const Company = require('@models/company');
 const { Vacancy } = require('@models/vacancy');
 const JWT = require('jsonwebtoken');
 const { JWT_SECRET } = require('@configuration');
-const { signToken } = require('@controllers/helpers/token');
+const { signToken } = require('@controllers/helpers');
 
 //Require the dev-dependencies
 const faker = require('faker');
