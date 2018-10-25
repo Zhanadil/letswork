@@ -29,7 +29,7 @@ var connectionOptions = {
     },
     useNewUrlParser: true
 };
-if (config.util.getEnv('NODE_ENV') !== 'prod') {
+if (config.util.getEnv('NODE_ENV') !== 'production') {
     connectionOptions.auth = undefined;
 }
 mongoose.connect(
