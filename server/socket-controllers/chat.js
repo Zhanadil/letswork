@@ -8,6 +8,64 @@ const { Conversation, Message } = require('@models/chat');
 
 const helpers = require('@socket-controllers/helpers');
 
+// Вспомогательная функция для доступа к документа диалога
+const findConversation = async (conversationId, userType, userId, receiverId) => {
+    // Проверка на существование чата по айди
+    var err, conversation = null;
+    if (conversationId) {
+        [err, conversation] = await to(
+            Conversation.findById(conversationId)
+        );
+        if (err) {
+            throw err;
+        }
+    }
+
+    if (conversation) {
+        return conversation;
+    }
+
+    // Если айди получателя не указан, то возвращаем ошибку
+    if (!receiverId) {
+        throw new Error("conversation not found");
+    }
+
+    var companyId, studentId;
+    if (userType === 'company') {
+        companyId = userId;
+        studentId = receiverId;
+    } else {
+        companyId = receiverId;
+        studentId = userId;
+    }
+
+    // Находим чат по собеседникам
+    [err, conversation] = await to(
+        Conversation.findOne({
+            companyId,
+            studentId,
+        })
+    );
+    if (err) {
+        throw err;
+    }
+
+    // Если не нашли и так, то создаем новый
+    if (!conversation) {
+        [err, conversation] = await to(
+            new Conversation({
+                companyId,
+                studentId
+            }).save()
+        );
+        if (err) {
+            throw err;
+        }
+    }
+
+    return conversation;
+}
+
 const onReceiveMessage = (socket, data) => {
     // Контроль получения сообщений
     // {
@@ -29,73 +87,22 @@ const onReceiveMessage = (socket, data) => {
             return;
         }
 
-        // Проверка на существование чата по айди
-        var err, conversation = null;
-        if (message.conversationId) {
-            [err, conversation] = await to(
-                Conversation.findById(message.conversationId)
-            );
-            if (err) {
-                returnCall({
-                    status: 'error',
-                    message: err.message
-                });
-                return;
-            }
+        var [err, conversation] = await to(
+            findConversation(
+                message.conversationId,
+                data.userType,
+                data.userId,
+                message.receiverId,
+            )
+        );
+        if (err) {
+            returnCall({
+                status: 'error',
+                message: err.message,
+            });
+            return;
         }
-
-        // Если не нашли чат по айди
-        if (!conversation) {
-            // Если айди получателя не указан, то возвращаем ошибку
-            if (!message.receiverId) {
-                returnCall({
-                    status: 'error',
-                    message: 'conversation not found',
-                });
-                return;
-            }
-
-            var companyId, studentId;
-            if (data.userType === 'company') {
-                companyId = data.userId;
-                studentId = message.receiverId;
-            } else {
-                companyId = message.receiverId;
-                studentId = data.userId;
-            }
-
-            // Находим чат по собеседникам
-            [err, conversation] = await to(
-                Conversation.findOne({
-                    companyId,
-                    studentId,
-                })
-            );
-            if (err) {
-                returnCall({
-                    status: 'error',
-                    message: err.message,
-                });
-                return;
-            }
-
-            // Если не нашли и так, то создаем новый
-            if (!conversation) {
-                [err, conversation] = await to(
-                    new Conversation({
-                        companyId,
-                        studentId
-                    }).save()
-                );
-                if (err) {
-                    returnCall({
-                        status: 'error',
-                        message: err.message,
-                    });
-                    return;
-                }
-            }
-
+        if (!message.conversationId) {
             message.conversationId = conversation.id;
         }
 
@@ -138,17 +145,21 @@ const onReceiveMessage = (socket, data) => {
             receiverType = 'company';
         }
 
-        var receiverId;
-        if (receiverType === 'student') {
-            receiverId = conversation.studentId;
-        } else if (receiverType === 'company') {
-            receiverId = conversation.companyId;
+        if (!message.receiverId) {
+            if (receiverType === 'student') {
+                message.receiverId = conversation.studentId;
+            } else if (receiverType === 'company') {
+                message.receiverId = conversation.companyId;
+            }
         }
 
         // Отправляем сообщение в комнату получателя
-        socket.in(receiverType + receiverId).emit('chat_message', chatMessage);
+        socket.in(receiverType + message.receiverId).emit('chat_message', chatMessage);
 
-        returnCall({ status: 'ok' });
+        returnCall({
+            status: 'ok',
+            conversationId: message.conversationId,
+        });
     });
 }
 

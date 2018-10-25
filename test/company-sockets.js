@@ -189,8 +189,23 @@ describe('student socket tests', () => {
 
                     companyClient.on('authenticated', function() {
                         companyClient.emit('chat_message', sentMessage, (returnMessage) => {
-                            returnMessage.should.deep.equal({
-                                status: "ok"
+                            Conversation.findById(returnMessage.conversationId, (err, conversation) => {
+                                expect(conversation.companyId).equal(companyId);
+                                expect(conversation.studentId).equal(studentId);
+                                expect(conversation.lastMessage)
+                                    .deep.include({
+                                        authorId: companyId,
+                                        authorType: "company",
+                                        messageType: "text",
+                                        text: sentMessage.text,
+                                    });
+                                expect(new Date(conversation.lastMessage.timeSent).getDate())
+                                    .to.equal(new Date(sentMessage.timeSent).getDate());
+
+                                returnMessage.should.deep.equal({
+                                    status: "ok",
+                                    conversationId: conversation.id,
+                                });
                             });
                         });
                     });
@@ -213,10 +228,6 @@ describe('student socket tests', () => {
 
                 companyClient2.on('authenticated', function() {
                     companyClient2.emit('chat_message', sentMessage, (returnMessage) => {
-                        returnMessage.should.deep.equal({
-                            status: "ok"
-                        });
-
                         Conversation.findOne({
                             companyId: companyId2,
                             studentId: studentId2,
@@ -224,6 +235,11 @@ describe('student socket tests', () => {
                             expect(err).to.be.null;
                             expect(conversation).not.to.be.null;
                             conversationId = conversation.id;
+
+                            returnMessage.should.deep.equal({
+                                status: "ok",
+                                conversationId,
+                            });
 
                             companyClient2.disconnect();
                             done();
@@ -248,14 +264,14 @@ describe('student socket tests', () => {
 
                 // Отправляем сообщение
                 studentClient2.emit('chat_message', sentMessage, (returnMessage) => {
-                    returnMessage.should.deep.equal({
-                        status: "ok"
-                    });
-
                     // Проверяем изменилось-ли последнее сообщение в чате
                     Conversation.findById(conversationId, (err, conversation) => {
                         expect(err).to.be.null;
                         expect(conversation.lastMessage.text).to.be.equal(sentMessage.text);
+                        returnMessage.should.deep.equal({
+                            status: "ok",
+                            conversationId: conversation.id,
+                        });
                         studentClient2.disconnect();
                         done();
                     });
@@ -327,7 +343,8 @@ describe('student socket tests', () => {
                     companyClient2.on('authenticated', function() {
                         companyClient2.emit('chat_message', sentMessage, (returnMessage) => {
                             returnMessage.should.deep.equal({
-                                status: "ok"
+                                status: "ok",
+                                conversationId,
                             });
                         });
                     });
