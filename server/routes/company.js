@@ -16,6 +16,7 @@ const AuthController = require('@controllers/auth');
 const ProfileController = require('@controllers/profile');
 const VacancyController = require('@controllers/vacancy');
 const ChatController = require('@controllers/chat');
+const StorageController = require('@controllers/storage');
 
 // **************  All company authorization related requests ****************
 
@@ -87,6 +88,11 @@ privateRouter.post('/update-profile', ProfileController.companyUpdateProfile);
 // Puts avatar image to default directory(it's inside config folder, name=RESOURCES_DIRECTORY)
 privateRouter.post('/image-avatar',
     ProfileController.companyUpdateImage(path.join(config.RESOURCES_DIRECTORY, 'avatar/company')));
+
+privateRouter.put('/media',
+    StorageController.limitFileSize(5000000), // Лимит 5МБ
+    StorageController.uploadMedia
+);
 
 router.use('/private', privateRouter);
 

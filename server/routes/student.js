@@ -16,6 +16,7 @@ const AuthController = require('@controllers/auth');
 const ProfileController = require('@controllers/profile');
 const VacancyController = require('@controllers/vacancy');
 const ChatController = require('@controllers/chat');
+const StorageController = require('@controllers/storage');
 
 // ***********  All student authorization related requests  *****************
 
@@ -74,10 +75,6 @@ privateRouter.route('/description')
     .post(ProfileController.studentUpdateDescription)
     .get(ProfileController.studentGetDescription);
 
-/*router.route('/private/profile-picture')
-    .post(passport.authorize('jwt-student', {session: false}),
-    StudentsController.saveProfilePicture);*/
-
 // Get full profile information.
 privateRouter.get('/profile', ProfileController.studentGetFullProfile);
 
@@ -97,6 +94,11 @@ privateRouter.post('/update-profile', ProfileController.studentUpdateProfile);
 // Puts avatar image to default directory(it's inside config folder, name=RESOURCES_DIRECTORY)
 privateRouter.post('/image-avatar',
     ProfileController.studentUpdateImage(path.join(config.RESOURCES_DIRECTORY, 'avatar/student')));
+
+privateRouter.put('/media',
+    StorageController.limitFileSize(5000000), // Лимит 5МБ
+    StorageController.uploadMedia
+);
 
 router.use('/private', privateRouter);
 
