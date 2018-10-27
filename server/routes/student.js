@@ -55,7 +55,7 @@ router.use('/auth', authRouter);
 // ********************  All Getters and Setters  *************************
 
 // Only authorized students can make these requests.
-privateRouter.use(passport.authorize('jwt-student', {session: false}));
+privateRouter.use(passport.authenticate('jwt-student', {session: false}));
 
 // Update student's first name and get student's first name by id.
 privateRouter.route('/firstName')
@@ -95,9 +95,17 @@ privateRouter.post('/update-profile', ProfileController.studentUpdateProfile);
 privateRouter.post('/image-avatar',
     ProfileController.studentUpdateImage(path.join(config.RESOURCES_DIRECTORY, 'avatar/student')));
 
-privateRouter.put('/media',
+privateRouter.put('/document',
     StorageController.limitFileSize(5000000), // Лимит 5МБ
-    StorageController.uploadMedia
+    StorageController.uploadDocument('student')
+);
+
+privateRouter.delete('/document/:id',
+    StorageController.removeDocument
+);
+
+privateRouter.get('/documents',
+    StorageController.getDocuments('student')
 );
 
 router.use('/private', privateRouter);

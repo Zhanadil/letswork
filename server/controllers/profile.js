@@ -278,7 +278,7 @@ module.exports = {
             return res.status(400).json({error: "firstName not received"});
         }
         // Find the user -> update first name -> save
-        Student.findById(req.account.id, function(err, student) {
+        Student.findById(req.user.id, function(err, student) {
             if (err) {
                 return res.status(500).json({error: "Student not found"});
             }
@@ -293,7 +293,7 @@ module.exports = {
 
     // Get student's first name by id.
     studentGetFirstName: (req, res, next) => {
-        Student.findById(req.account.id, function(err, student) {
+        Student.findById(req.user.id, function(err, student) {
             if (err) {
                 return res.status(500).json({error: "Student not found"});
             }
@@ -306,7 +306,7 @@ module.exports = {
         if (req.body.lastName === undefined) {
             return res.status(400).json({error: "lastName not received"});
         }
-        Student.findById(req.account.id, function(err, student) {
+        Student.findById(req.user.id, function(err, student) {
             if (err) {
                 return res.status(500).json({error: "Student not found"});
             }
@@ -320,7 +320,7 @@ module.exports = {
     },
 
     studentGetLastName: (req, res, next) => {
-        Student.findById(req.account.id, function(err, student) {
+        Student.findById(req.user.id, function(err, student) {
             if (err) {
                 return res.status(500).json({error: "Student not found"});
             }
@@ -333,7 +333,7 @@ module.exports = {
         if (req.body.phone === undefined) {
             return res.status(400).json({error: "phone not received"});
         }
-        Student.findById(req.account.id, function(err, student) {
+        Student.findById(req.user.id, function(err, student) {
             if (err) {
                 return res.status(500).json({error: "Student not found"});
             }
@@ -347,7 +347,7 @@ module.exports = {
     },
 
     studentGetPhone: (req, res, next) => {
-        Student.findById(req.account.id, function(err, student) {
+        Student.findById(req.user.id, function(err, student) {
             if (err) {
                 return res.status(500).json({error: "Student not found"});
             }
@@ -360,7 +360,7 @@ module.exports = {
         if (req.body.description === undefined) {
             return res.status(400).json({error: "description not received"});
         }
-        Student.findById(req.account.id, function(err, student) {
+        Student.findById(req.user.id, function(err, student) {
             if (err) {
                 return res.status(500).json({error: "Student not found"});
             }
@@ -374,7 +374,7 @@ module.exports = {
     },
 
     studentGetDescription: (req, res, next) => {
-        Student.findById(req.account.id, function(err, student) {
+        Student.findById(req.user.id, function(err, student) {
             if (err) {
                 return res.status(500).json({error: "Student not found"});
             }
@@ -387,7 +387,7 @@ module.exports = {
     studentGetFullProfile: async (req, res, next) => {
         var err, student;
         [err, student] = await to(
-            Student.findById(req.account.id)
+            Student.findById(req.user.id)
         );
         if (err) {
             return res.status(500).json({ error: err.message });
@@ -395,7 +395,7 @@ module.exports = {
 
         var questionSets;
         [err, questionSets] = await to(
-            helpers.questionSetsInfo(req.account.id)
+            helpers.questionSetsInfo(req.user.id)
         );
         if (err) {
             return res.status(500).json({ error: err.message });
@@ -413,7 +413,7 @@ module.exports = {
     // Output:
     //      {"id": "... student id ...", "email": "johndoe@hotmail.com"}
     studentGetProfile: (req, res, next) => {
-        Student.findById(req.account.id, function(err, student) {
+        Student.findById(req.user.id, function(err, student) {
             if (err) {
                 return res.status(500).json({error: "Student not found"});
             }
@@ -444,7 +444,7 @@ module.exports = {
     // Input example:
     //      {"email": "some_email@gmail.com", "firstName": "John"}
     studentUpdateProfile: (req, res, next) => {
-        Student.findById(req.account.id, function(err, student) {
+        Student.findById(req.user.id, function(err, student) {
             if (err) {
                 return res.status(500).json({error: "Student not found"});
             }
@@ -480,7 +480,7 @@ module.exports = {
 
             logger.debug(file.name);
 
-            var image_name = req.account.id;
+            var image_name = req.user.id;
             //TODO: support jpg.
         	if (file.mimetype === 'image/png') {
         		image_name += '.png';

@@ -1,3 +1,5 @@
+const { fileInfoSchema } = require('@models/file_schemas');
+
 const mongoose = require('mongoose');
 
 const messageSchema = mongoose.Schema({
@@ -12,6 +14,7 @@ const messageSchema = mongoose.Schema({
         enum: ['text'],
     },
     text: String,
+    files: [fileInfoSchema],
     timeSent: {
         type: Date,
         default: Date.now,
