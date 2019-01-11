@@ -5,14 +5,14 @@ var transporter = mailer.createTransport({
   service: 'gmail',
   auth: {
     user: 'znurtoleuov@gmail.com',
-    pass: '3.3&d6Q,oL'
+    pass: 'Alibek12345'
   }
 });
 
 module.exports = {
     sendMail: (email, subject, message) => {
         var mailOptions = {
-            from: 'znurtoleuov@gmail.com',
+            from: 'love2work.kz@gmail.com',
             to: email,
             subject, subject,
             text: message,
